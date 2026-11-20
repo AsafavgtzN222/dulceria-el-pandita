@@ -191,62 +191,77 @@ def pagar(request):
     if request.method == 'POST':
         form = PedidoForm(request.POST)
         if form.is_valid():
-            # Validar stock antes de concretar pedido
-            errores_stock = []
-            for item in carrito:
-                try:
-                    p = Producto.objects.get(pk=item['id'])
-                    if item['cantidad'] > p.stock:
-                        errores_stock.append(f'"{p.nombre}" solo tiene {p.stock} disponible(s) (pediste {item["cantidad"]}).')
-                except Producto.DoesNotExist:
-                    errores_stock.append(f'El producto {item["nombre"]} ya no existe.')
+            try:
+                # Validar stock antes de concretar pedido
+                errores_stock = []
+                for item in carrito:
+                    try:
+                        p = Producto.objects.get(pk=item['id'])
+                        if item['cantidad'] > p.stock:
+                            errores_stock.append(f'"{p.nombre}" solo tiene {p.stock} disponible(s) (pediste {item["cantidad"]}).')
+                    except Producto.DoesNotExist:
+                        errores_stock.append(f'El producto {item["nombre"]} ya no está disponible.')
 
-            if errores_stock:
+                if errores_stock:
+                    return render(request, 'pagar.html', {
+                        'form': form,
+                        'productos_lista': productos_lista,
+                        'carrito': carrito,
+                        'mostrar_paso2': True,
+                        'error_stock_general': " ".join(errores_stock)
+                    })
+
+                cd = form.cleaned_data
+                subtotal = sum(i['precio'] * i['cantidad'] for i in carrito)
+
+                # Descontar stock de la base de datos de manera segura
+                for item in carrito:
+                    try:
+                        p = Producto.objects.get(pk=item['id'])
+                        p.stock = max(0, p.stock - item['cantidad'])
+                        p.save()
+                    except Producto.DoesNotExist:
+                        pass
+
+                pedido = Pedido.objects.create(
+                    nombre=cd['nombre'],
+                    apellido=cd.get('apellido', ''),
+                    telefono=cd['telefono'],
+                    email=cd.get('email', ''),
+                    entrega=cd['entrega'],
+                    direccion=cd.get('direccion', ''),
+                    metodo_pago=cd['metodo_pago'],
+                    notas=cd.get('notas', ''),
+                    items_json=json.dumps(carrito, ensure_ascii=False),
+                    total=subtotal,
+                )
+
+                # Enviar correo de confirmación de pedido al cliente y copia a la tienda
+                if pedido.email:
+                    enviar_correo_pedido(pedido)
+
+                # Limpiar carrito después de confirmar
+                _save_carrito(request, [])
+
+                return render(request, 'pagar.html', {
+                    'form': form,
+                    'productos_lista': Producto.objects.all(),
+                    'pedido': pedido,
+                    'confirmado': True,
+                    'subtotal': subtotal,
+                })
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error("Error al procesar pedido: %s", e, exc_info=True)
                 return render(request, 'pagar.html', {
                     'form': form,
                     'productos_lista': productos_lista,
                     'carrito': carrito,
                     'mostrar_paso2': True,
-                    'error_stock_general': " ".join(errores_stock)
+                    'error_stock_general': "Ocurrió un inconveniente temporal al registrar tu pedido. Por favor contáctanos por WhatsApp al 81 3712 2570 para tomar tu orden directamente."
                 })
-
-            cd = form.cleaned_data
-            subtotal = sum(i['precio'] * i['cantidad'] for i in carrito)
-
-            # Descontar stock de la base de datos
-            for item in carrito:
-                p = Producto.objects.get(pk=item['id'])
-                p.stock = max(0, p.stock - item['cantidad'])
-                p.save()
-
-            pedido = Pedido.objects.create(
-                nombre=cd['nombre'],
-                apellido=cd.get('apellido', ''),
-                telefono=cd['telefono'],
-                email=cd.get('email', ''),
-                entrega=cd['entrega'],
-                direccion=cd.get('direccion', ''),
-                metodo_pago=cd['metodo_pago'],
-                notas=cd.get('notas', ''),
-                items_json=json.dumps(carrito, ensure_ascii=False),
-                total=subtotal,
-            )
-
-            # Enviar correo de confirmación de pedido al cliente y copia a la tienda
-            if pedido.email:
-                enviar_correo_pedido(pedido)
-
-            # Limpiar carrito después de confirmar
-            _save_carrito(request, [])
-
-            return render(request, 'pagar.html', {
-                'form': form,
-                'productos_lista': Producto.objects.all(),
-                'pedido': pedido,
-                'confirmado': True,
-                'subtotal': subtotal,
-            })
         # Si el form tiene errores, volvemos a mostrar el paso 2
+
         return render(request, 'pagar.html', {
             'form': form,
             'productos_lista': productos_lista,
