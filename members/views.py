@@ -3,8 +3,9 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
 
-from .models import Producto, Pedido
+from .models import Producto, Pedido, MensajeContacto
 from .forms import PedidoForm
+from .emails import enviar_correo_pedido, enviar_correo_contacto
 
 
 # ─── Páginas simples ──────────────────────────────────────────────────────────
@@ -22,7 +23,29 @@ def nosotros(request):
 
 
 def contacto(request):
-    return render(request, 'contacto.html')
+    enviado = False
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        apellido = request.POST.get('apellido', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        email = request.POST.get('email', '').strip()
+        asunto = request.POST.get('asunto', '').strip()
+        mensaje = request.POST.get('mensaje', '').strip()
+
+        if nombre and email and mensaje:
+            mensaje_obj = MensajeContacto.objects.create(
+                nombre=nombre,
+                apellido=apellido,
+                telefono=telefono,
+                email=email,
+                asunto=asunto,
+                mensaje=mensaje,
+            )
+            # Enviar correo de confirmación al usuario y aviso a la tienda
+            enviar_correo_contacto(mensaje_obj)
+            enviado = True
+
+    return render(request, 'contacto.html', {'enviado': enviado})
 
 
 # ─── Productos ────────────────────────────────────────────────────────────────
@@ -201,6 +224,10 @@ def pagar(request):
                 items_json=json.dumps(carrito, ensure_ascii=False),
                 total=subtotal,
             )
+
+            # Enviar correo de confirmación de pedido al cliente y copia a la tienda
+            if pedido.email:
+                enviar_correo_pedido(pedido)
 
             # Limpiar carrito después de confirmar
             _save_carrito(request, [])

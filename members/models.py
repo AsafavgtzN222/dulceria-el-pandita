@@ -48,3 +48,18 @@ class Pedido(models.Model):
 
     def __str__(self):
         return f"Pedido #{self.pk} - {self.nombre} ({self.fecha:%d/%m/%Y})"
+
+
+class MensajeContacto(models.Model):
+    nombre = models.CharField(max_length=100)
+    apellido = models.CharField(max_length=100, blank=True)
+    telefono = models.CharField(max_length=20, blank=True)
+    email = models.EmailField()
+    asunto = models.CharField(max_length=100, blank=True)
+    mensaje = models.TextField()
+    fecha = models.DateTimeField(auto_now_add=True)
+    respondido = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Mensaje de {self.nombre} - {self.asunto} ({self.fecha:%d/%m/%Y %H:%M})"
+

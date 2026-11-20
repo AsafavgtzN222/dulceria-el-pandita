@@ -14,7 +14,7 @@
   <div class="header-inner">
     <a href="{% url 'inicio' %}" class="logo">
       <div class="logo-img-wrap">
-        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita">
       </div>
       <div>
         <span class="logo-nombre">El Pandita</span>
@@ -49,7 +49,7 @@
 
       <div>
 
-        <h2 class="titulo-seccion" style="text-align:left; font-size:1.8rem; margin-bottom:1.5rem;">
+        <h2 class="titulo-seccion titulo-contacto">
           Encuéntranos <span>aquí</span>
         </h2>
 
@@ -93,8 +93,8 @@
           </div>
         </div>
 
-        <div class="info-card" style="flex-direction:column; gap:.75rem;">
-          <div style="display:flex; align-items:center; gap:1rem;">
+        <div class="info-card info-card-horario">
+          <div class="info-card-header">
             <div class="info-icono">🕐</div>
             <div class="info-contenido">
               <h4>Horarios de atención</h4>
@@ -118,17 +118,14 @@
 
         <a href="https://wa.me/528137122570?text=Hola%20El%20Pandita,%20me%20interesa%20conocer%20sus%20productos."
           target="_blank"
-          class="btn btn-verde"
-          style="width:100%; margin-top:.75rem;">
+          class="btn btn-verde btn-whatsapp-contacto">
           💬 Escríbenos por WhatsApp
         </a>
 
-        <div style="margin-top:1.5rem; border-radius:var(--radio); overflow:hidden; box-shadow:var(--sombra1);">
+        <div class="mapa-contenedor">
           <iframe
             src="https://www.google.com/maps?q=Col.+San+Juan,+89758+Xicot%C3%A9ncatl,+Tamaulipas&output=embed"
-            width="100%"
-            height="260"
-            style="border:0;"
+            class="mapa-iframe"
             allowfullscreen=""
             loading="lazy">
           </iframe>
@@ -141,10 +138,15 @@
         <h3>Envíanos un mensaje</h3>
         <p>Déjanos tus datos y te responderemos lo antes posible.</p>
 
-        <form action="https://formsubmit.co/asaflocouavli@gmail.com" method="POST">
+        {% if enviado %}
+        <div class="alerta-exito">
+          <p>🎉 <strong>¡Mensaje enviado con éxito!</strong></p>
+          <p>Hemos recibido tu consulta y te enviamos un correo de confirmación. Te responderemos a la brevedad posible. 🐼🍬</p>
+        </div>
+        {% endif %}
 
-          <input type="hidden" name="_captcha" value="false">
-          <input type="hidden" name="_next" value="gracias.html">
+        <form action="{% url 'contacto' %}" method="POST">
+          {% csrf_token %}
 
           <div class="form-row">
             <div class="form-group">
@@ -172,11 +174,11 @@
             <label for="asunto">Asunto</label>
             <select id="asunto" name="asunto">
               <option value="">— Selecciona un tema —</option>
-              <option value="productos">Información sobre productos</option>
-              <option value="eventos">Servicio para eventos</option>
-              <option value="mayoreo">Venta por mayoreo</option>
-              <option value="pedido">Hacer un pedido</option>
-              <option value="otro">Otro</option>
+              <option value="Información sobre productos">Información sobre productos</option>
+              <option value="Servicio para eventos">Servicio para eventos</option>
+              <option value="Venta por mayoreo">Venta por mayoreo</option>
+              <option value="Hacer un pedido">Hacer un pedido</option>
+              <option value="Otro">Otro</option>
             </select>
           </div>
 

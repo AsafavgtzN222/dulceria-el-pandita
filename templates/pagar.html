@@ -71,6 +71,13 @@
             <strong>💰 Total: ${{ pedido.total|floatformat:0 }} MXN</strong>
           </div>
 
+          {% if pedido.email %}
+          <div class="aviso-correo-enviado">
+            📧 Te enviamos un correo de confirmación con el resumen detallado de tu pedido a <strong>{{ pedido.email }}</strong>.
+          </div>
+          {% endif %}
+
+
           <div class="conf-btn-bloque">
             <a href="https://wa.me/528137122570?text=¡Hola%20El%20Pandita!%20🐼%0APedido%20%23{{ pedido.pk }}%0ACliente%3A%20{{ pedido.nombre }}%0ATotal%3A%20%24{{ pedido.total|floatformat:0 }}%20MXN"
                target="_blank" class="btn btn-verde">

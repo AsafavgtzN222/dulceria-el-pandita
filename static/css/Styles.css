@@ -1414,3 +1414,62 @@ footer { background: var(--oscuro); color: rgba(255,255,255,0.75); padding: 3rem
   font-weight: 700;
   font-size: 0.9rem;
 }
+
+/* ===== NOTIFICACIONES Y ALERTAS DE EMAIL ===== */
+.alerta-exito {
+  background: #d8f3dc;
+  border: 2px solid #52b788;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  color: #1b4332;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+.alerta-exito p {
+  margin: 0;
+}
+.aviso-correo-enviado {
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.88rem;
+  color: #2e7d32;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* ===== CLASES PÁGINA CONTACTO ===== */
+.titulo-contacto {
+  text-align: left;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+.info-card-horario {
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.btn-whatsapp-contacto {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+.mapa-contenedor {
+  margin-top: 1.5rem;
+  border-radius: var(--radio);
+  overflow: hidden;
+  box-shadow: var(--sombra1);
+}
+.mapa-iframe {
+  border: 0;
+  width: 100%;
+  height: 260px;
+}
+
