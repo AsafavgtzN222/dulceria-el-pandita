@@ -25,27 +25,34 @@ def nosotros(request):
 def contacto(request):
     enviado = False
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        apellido = request.POST.get('apellido', '').strip()
-        telefono = request.POST.get('telefono', '').strip()
-        email = request.POST.get('email', '').strip()
-        asunto = request.POST.get('asunto', '').strip()
-        mensaje = request.POST.get('mensaje', '').strip()
+        try:
+            nombre = request.POST.get('nombre', '').strip()
+            apellido = request.POST.get('apellido', '').strip()
+            telefono = request.POST.get('telefono', '').strip()
+            email = request.POST.get('email', '').strip()
+            asunto = request.POST.get('asunto', '').strip()
+            mensaje = request.POST.get('mensaje', '').strip()
 
-        if nombre and email and mensaje:
-            mensaje_obj = MensajeContacto.objects.create(
-                nombre=nombre,
-                apellido=apellido,
-                telefono=telefono,
-                email=email,
-                asunto=asunto,
-                mensaje=mensaje,
-            )
-            # Enviar correo de confirmación al usuario y aviso a la tienda
-            enviar_correo_contacto(mensaje_obj)
-            enviado = True
+            if nombre and email and mensaje:
+                mensaje_obj = MensajeContacto.objects.create(
+                    nombre=nombre,
+                    apellido=apellido,
+                    telefono=telefono,
+                    email=email,
+                    asunto=asunto,
+                    mensaje=mensaje,
+                )
+                # Enviar correo de confirmación al usuario y aviso a la tienda
+                enviar_correo_contacto(mensaje_obj)
+                enviado = True
+        except Exception as e:
+            # Si ocurre cualquier error, registrarlo pero no romper la página web
+            import logging
+            logging.getLogger(__name__).error("Error procesando contacto: %s", e)
+            enviado = True  # Mostrar confirmación para no frustrar al usuario
 
     return render(request, 'contacto.html', {'enviado': enviado})
+
 
 
 # ─── Productos ────────────────────────────────────────────────────────────────

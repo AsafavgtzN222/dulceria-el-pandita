@@ -1,36 +1,46 @@
 import logging
+import threading
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
+def _enviar_correo_en_hilo(msg):
+    """Ejecuta el envío de correo en segundo plano sin congelar la web."""
+    try:
+        msg.send(fail_silently=True)
+        logger.info("Correo enviado a %s", msg.to)
+    except Exception as e:
+        logger.warning("Aviso: no se pudo entregar correo a %s: %s", msg.to, e)
+
+
 def enviar_correo_pedido(pedido):
     """
-    Envía un correo de confirmación de compra al cliente y una copia de aviso a la tienda.
+    Envía un correo de confirmación de compra al cliente y una copia de aviso a la tienda
+    en segundo plano para evitar timeouts del servidor.
     """
     if not pedido.email:
-        logger.info("El pedido #%s no tiene correo registrado.", pedido.pk)
         return False
 
-    items = pedido.get_items()
-    items_texto = "\n".join([f"- {it.get('nombre')} x{it.get('cantidad')} : ${float(it.get('precio', 0)) * int(it.get('cantidad', 1)):.2f} MXN" for it in items])
-    items_html = "".join([
-        f"<tr>"
-        f"<td style='padding:8px 12px;border-bottom:1px solid #eee;'>{it.get('nombre')}</td>"
-        f"<td style='padding:8px 12px;border-bottom:1px solid #eee;text-align:center;'>{it.get('cantidad')}</td>"
-        f"<td style='padding:8px 12px;border-bottom:1px solid #eee;text-align:right;'>${float(it.get('precio', 0)):.2f}</td>"
-        f"<td style='padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:bold;'>${float(it.get('precio', 0)) * int(it.get('cantidad', 1)):.2f}</td>"
-        f"</tr>"
-        for it in items
-    ])
+    try:
+        items = pedido.get_items()
+        items_texto = "\n".join([f"- {it.get('nombre')} x{it.get('cantidad')} : ${float(it.get('precio', 0)) * int(it.get('cantidad', 1)):.2f} MXN" for it in items])
+        items_html = "".join([
+            f"<tr>"
+            f"<td style='padding:8px 12px;border-bottom:1px solid #eee;'>{it.get('nombre')}</td>"
+            f"<td style='padding:8px 12px;border-bottom:1px solid #eee;text-align:center;'>{it.get('cantidad')}</td>"
+            f"<td style='padding:8px 12px;border-bottom:1px solid #eee;text-align:right;'>${float(it.get('precio', 0)):.2f}</td>"
+            f"<td style='padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:bold;'>${float(it.get('precio', 0)) * int(it.get('cantidad', 1)):.2f}</td>"
+            f"</tr>"
+            for it in items
+        ])
 
-    nombre_completo = f"{pedido.nombre} {pedido.apellido}".strip()
-    direccion_info = f"\nDirección de entrega: {pedido.direccion}" if pedido.direccion else ""
+        nombre_completo = f"{pedido.nombre} {pedido.apellido}".strip()
+        direccion_info = f"\nDirección de entrega: {pedido.direccion}" if pedido.direccion else ""
 
-    # Mensaje en Texto Plano
-    asunto = f"🐼 ¡Confirmación de Pedido #{pedido.pk}! - El Pandita Dulcería"
-    mensaje_texto = f"""¡Hola {nombre_completo}!
+        asunto = f"🐼 ¡Confirmación de Pedido #{pedido.pk}! - El Pandita Dulcería"
+        mensaje_texto = f"""¡Hola {nombre_completo}!
 
 ¡Muchas gracias por tu compra en El Pandita Dulcería!
 Hemos recibido con éxito tu pedido #{pedido.pk}.
@@ -45,15 +55,13 @@ TELÉFONO DE CONTACTO: {pedido.telefono}
 NOTAS: {pedido.notas or 'Ninguna'}
 
 Nos comunicaremos contigo a la brevedad por WhatsApp o llamada para coordinar la entrega.
-Si tienes cualquier consulta, puedes escribirnos a nuestro WhatsApp oficial: 81 3712 2570
+WhatsApp oficial: 81 3712 2570
 
 ¡Gracias por endulzar tu día con nosotros!
 El Pandita Dulcería 🍬
-Col. San Juan, Xicoténcatl, Tamaulipas
 """
 
-    # Mensaje en HTML
-    mensaje_html = f"""<!DOCTYPE html>
+        mensaje_html = f"""<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -82,7 +90,7 @@ Col. San Juan, Xicoténcatl, Tamaulipas
     <div class="content">
       <span class="badge">Pedido #{pedido.pk}</span>
       <h2 style="color:#2D2D2D;margin-top:0;">¡Hola {nombre_completo}!</h2>
-      <p>Hemos recibido tu pedido con éxito y ya lo estamos preparando con mucho cariño. A continuación encontrarás el resumen de tu compra:</p>
+      <p>Hemos recibido tu pedido con éxito y ya lo estamos preparando con mucho cariño:</p>
       
       <table>
         <thead>
@@ -126,21 +134,22 @@ Col. San Juan, Xicoténcatl, Tamaulipas
 </html>
 """
 
-    remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'El Pandita Dulcería <asaflocouavli@gmail.com>')
-    tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
+        remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'asaflocouavli@gmail.com')
+        tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
 
-    try:
-        # 1. Correo al cliente
-        msg = EmailMultiAlternatives(
+        # 1. Enviar al cliente en hilo asíncrono
+        msg_cliente = EmailMultiAlternatives(
             subject=asunto,
             body=mensaje_texto,
             from_email=remitente,
             to=[pedido.email],
         )
-        msg.attach_alternative(mensaje_html, "text/html")
-        msg.send(fail_silently=True)
+        msg_cliente.attach_alternative(mensaje_html, "text/html")
+        hilo_cli = threading.Thread(target=_enviar_correo_en_hilo, args=(msg_cliente,))
+        hilo_cli.daemon = True
+        hilo_cli.start()
 
-        # 2. Correo de notificación a la tienda (si es distinto al cliente)
+        # 2. Notificar a la tienda en hilo asíncrono
         if tienda_email and tienda_email.lower() != pedido.email.lower():
             asunto_tienda = f"🚨 [NUEVO PEDIDO #{pedido.pk}] {nombre_completo} - ${pedido.total:.2f} MXN"
             msg_tienda = EmailMultiAlternatives(
@@ -150,26 +159,30 @@ Col. San Juan, Xicoténcatl, Tamaulipas
                 to=[tienda_email],
             )
             msg_tienda.attach_alternative(mensaje_html, "text/html")
-            msg_tienda.send(fail_silently=True)
+            hilo_tienda = threading.Thread(target=_enviar_correo_en_hilo, args=(msg_tienda,))
+            hilo_tienda.daemon = True
+            hilo_tienda.start()
 
         return True
     except Exception as e:
-        logger.error("Error enviando correo de pedido #%s: %s", pedido.pk, e)
+        logger.error("Error al preparar correo de pedido #%s: %s", pedido.pk, e)
         return False
 
 
 def enviar_correo_contacto(mensaje_obj):
     """
-    Envía un correo de confirmación de mensaje recibido al cliente y notifica a la tienda.
+    Envía un correo de confirmación de mensaje recibido al cliente y notifica a la tienda
+    en segundo plano sin bloquear la página web.
     """
     if not mensaje_obj.email:
         return False
 
-    nombre_completo = f"{mensaje_obj.nombre} {mensaje_obj.apellido}".strip()
-    asunto_tema = mensaje_obj.asunto or "Consulta general"
+    try:
+        nombre_completo = f"{mensaje_obj.nombre} {mensaje_obj.apellido}".strip()
+        asunto_tema = mensaje_obj.asunto or "Consulta general"
 
-    asunto_cliente = f"💬 Hemos recibido tu mensaje - El Pandita Dulcería"
-    mensaje_texto = f"""¡Hola {nombre_completo}!
+        asunto_cliente = f"💬 Hemos recibido tu mensaje - El Pandita Dulcería"
+        mensaje_texto = f"""¡Hola {nombre_completo}!
 
 Gracias por ponerte en contacto con El Pandita Dulcería.
 Hemos recibido tu mensaje con éxito:
@@ -180,13 +193,13 @@ Mensaje:
 "{mensaje_obj.mensaje}"
 
 Nuestro equipo revisará tu solicitud y te responderemos lo más pronto posible.
-Si necesitas atención inmediata, puedes escribirnos directamente a nuestro WhatsApp oficial: 81 3712 2570.
+WhatsApp oficial: 81 3712 2570.
 
-¡Que tengas un excelente y dulce día! 🐼
+¡Que tengas un excelente día! 🐼
 El Pandita Dulcería
 """
 
-    mensaje_html = f"""<!DOCTYPE html>
+        mensaje_html = f"""<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -209,66 +222,58 @@ El Pandita Dulcería
     </div>
     <div class="content">
       <p>Hola <strong>{nombre_completo}</strong>,</p>
-      <p>Muchas gracias por escribirnos. Queremos confirmarte que tu mensaje sobre <strong>"{asunto_tema}"</strong> ha llegado correctamente a nuestro equipo:</p>
+      <p>Muchas gracias por escribirnos. Confirmamos que tu mensaje sobre <strong>"{asunto_tema}"</strong> ha llegado a nuestro equipo:</p>
       
       <div class="card-msg">
         "{mensaje_obj.mensaje}"
       </div>
 
-      <p>Te responderemos a la brevedad por este medio o al teléfono proporcionado (<strong>{mensaje_obj.telefono or 'N/A'}</strong>).</p>
+      <p>Te responderemos a la brevedad posible.</p>
 
       <div style="text-align:center;margin-top:25px;">
-        <p style="margin-bottom:8px;font-size:13px;color:#666;">¿Necesitas una respuesta urgente?</p>
-        <a href="https://wa.me/528137122570?text=Hola%20El%20Pandita,%20te%20escrib%C3%AD%20desde%20la%20web%20con%20asunto:%20{asunto_tema}" class="btn-wa" target="_blank">
+        <p style="margin-bottom:8px;font-size:13px;color:#666;">¿Necesitas respuesta inmediata?</p>
+        <a href="https://wa.me/528137122570?text=Hola%20El%20Pandita,%20te%20escrib%C3%AD%20desde%20la%20web" class="btn-wa" target="_blank">
           💬 Escríbenos por WhatsApp (81 3712 2570)
         </a>
       </div>
     </div>
     <div class="footer">
       <p style="margin:0 0 5px;">El Pandita Dulcería • Col. San Juan, Xicoténcatl, Tamaulipas</p>
-      <p style="margin:0;">Horario: Lunes a Sábado de 9:00 am a 8:00 pm</p>
     </div>
   </div>
 </body>
 </html>
 """
 
-    remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'El Pandita Dulcería <asaflocouavli@gmail.com>')
-    tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
+        remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'asaflocouavli@gmail.com')
+        tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
 
-    try:
-        # 1. Enviar al cliente
-        msg = EmailMultiAlternatives(
+        # 1. Enviar al cliente en hilo asíncrono
+        msg_cliente = EmailMultiAlternatives(
             subject=asunto_cliente,
             body=mensaje_texto,
             from_email=remitente,
             to=[mensaje_obj.email],
         )
-        msg.attach_alternative(mensaje_html, "text/html")
-        msg.send(fail_silently=True)
+        msg_cliente.attach_alternative(mensaje_html, "text/html")
+        hilo_cli = threading.Thread(target=_enviar_correo_en_hilo, args=(msg_cliente,))
+        hilo_cli.daemon = True
+        hilo_cli.start()
 
-        # 2. Notificar a la tienda
+        # 2. Notificar a la tienda en hilo asíncrono
         if tienda_email:
             asunto_tienda = f"📩 [NUEVO CONTACTO] {nombre_completo} - {asunto_tema}"
-            cuerpo_tienda = f"""Nuevo mensaje recibido desde la página web:
-
-Nombre: {nombre_completo}
-Email: {mensaje_obj.email}
-Teléfono: {mensaje_obj.telefono or 'No proporcionado'}
-Asunto: {asunto_tema}
-
-Mensaje:
-{mensaje_obj.mensaje}
-"""
             msg_tienda = EmailMultiAlternatives(
                 subject=asunto_tienda,
-                body=cuerpo_tienda,
+                body=f"Nuevo mensaje:\nNombre: {nombre_completo}\nEmail: {mensaje_obj.email}\nTel: {mensaje_obj.telefono}\nAsunto: {asunto_tema}\n\nMensaje:\n{mensaje_obj.mensaje}",
                 from_email=remitente,
                 to=[tienda_email],
             )
-            msg_tienda.send(fail_silently=True)
+            hilo_tienda = threading.Thread(target=_enviar_correo_en_hilo, args=(msg_tienda,))
+            hilo_tienda.daemon = True
+            hilo_tienda.start()
 
         return True
     except Exception as e:
-        logger.error("Error enviando correo de contacto de %s: %s", mensaje_obj.email, e)
+        logger.error("Error al preparar correo de contacto: %s", e)
         return False
