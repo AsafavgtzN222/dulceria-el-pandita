@@ -1,24 +1,69 @@
+import os
+import json
 import logging
 import threading
+import urllib.request
+import urllib.error
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
-def _enviar_correo_en_hilo(msg):
-    """Ejecuta el envío de correo en segundo plano sin congelar la web."""
+def _enviar_via_resend(to_email, subject, text_body, html_body, api_key):
+    """Envía correo mediante la API HTTPS de Resend (puerto 443, nunca bloqueado en Render)."""
     try:
-        msg.send(fail_silently=True)
-        logger.info("Correo enviado a %s", msg.to)
+        from_email = os.environ.get('RESEND_FROM_EMAIL', 'El Pandita Dulceria <onboarding@resend.dev>')
+        payload = json.dumps({
+            "from": from_email,
+            "to": [to_email] if isinstance(to_email, str) else to_email,
+            "subject": subject,
+            "html": html_body,
+            "text": text_body,
+        }).encode('utf-8')
+
+        req = urllib.request.Request(
+            "https://api.resend.com/emails",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "User-Agent": "ElPanditaDulceria/1.0"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=5) as response:
+            logger.info("Correo enviado exitosamente vía Resend HTTPS a %s (Status: %s)", to_email, response.status)
+            return True
     except Exception as e:
-        logger.warning("Aviso: no se pudo entregar correo a %s: %s", msg.to, e)
+        logger.warning("No se pudo enviar vía Resend a %s: %s", to_email, e)
+        return False
+
+
+def _despachar_correo(to_email, subject, text_body, html_body):
+    """Despacha el correo según las variables disponibles de forma asíncrona."""
+    resend_key = os.environ.get('RESEND_API_KEY', '').strip()
+
+    if resend_key:
+        _enviar_via_resend(to_email, subject, text_body, html_body, resend_key)
+    else:
+        try:
+            remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'asaflocouavli@gmail.com')
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=text_body,
+                from_email=remitente,
+                to=[to_email] if isinstance(to_email, str) else to_email,
+            )
+            msg.attach_alternative(html_body, "text/html")
+            msg.send(fail_silently=True)
+            logger.info("Correo procesado vía Django Backend para %s", to_email)
+        except Exception as e:
+            logger.warning("Aviso Django backend email a %s: %s", to_email, e)
 
 
 def enviar_correo_pedido(pedido):
     """
-    Envía un correo de confirmación de compra al cliente y una copia de aviso a la tienda
-    en segundo plano para evitar timeouts del servidor.
+    Envía confirmación de pedido al cliente y copia a la tienda en segundo plano.
     """
     if not pedido.email:
         return False
@@ -134,34 +179,18 @@ El Pandita Dulcería 🍬
 </html>
 """
 
-        remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'asaflocouavli@gmail.com')
         tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
 
-        # 1. Enviar al cliente en hilo asíncrono
-        msg_cliente = EmailMultiAlternatives(
-            subject=asunto,
-            body=mensaje_texto,
-            from_email=remitente,
-            to=[pedido.email],
-        )
-        msg_cliente.attach_alternative(mensaje_html, "text/html")
-        hilo_cli = threading.Thread(target=_enviar_correo_en_hilo, args=(msg_cliente,))
-        hilo_cli.daemon = True
-        hilo_cli.start()
+        # Lanzar en hilo asíncrono
+        def _job_pedido():
+            _despachar_correo(pedido.email, asunto, mensaje_texto, mensaje_html)
+            if tienda_email and tienda_email.lower() != pedido.email.lower():
+                asunto_tienda = f"🚨 [NUEVO PEDIDO #{pedido.pk}] {nombre_completo} - ${pedido.total:.2f} MXN"
+                _despachar_correo(tienda_email, asunto_tienda, f"Nuevo pedido #{pedido.pk} de {nombre_completo} por ${pedido.total:.2f} MXN", mensaje_html)
 
-        # 2. Notificar a la tienda en hilo asíncrono
-        if tienda_email and tienda_email.lower() != pedido.email.lower():
-            asunto_tienda = f"🚨 [NUEVO PEDIDO #{pedido.pk}] {nombre_completo} - ${pedido.total:.2f} MXN"
-            msg_tienda = EmailMultiAlternatives(
-                subject=asunto_tienda,
-                body=f"Se ha recibido el pedido #{pedido.pk}.\nCliente: {nombre_completo}\nTel: {pedido.telefono}\nEmail: {pedido.email}\n\nDetalle:\n{items_texto}\n\nTotal: ${pedido.total:.2f} MXN",
-                from_email=remitente,
-                to=[tienda_email],
-            )
-            msg_tienda.attach_alternative(mensaje_html, "text/html")
-            hilo_tienda = threading.Thread(target=_enviar_correo_en_hilo, args=(msg_tienda,))
-            hilo_tienda.daemon = True
-            hilo_tienda.start()
+        t = threading.Thread(target=_job_pedido)
+        t.daemon = True
+        t.start()
 
         return True
     except Exception as e:
@@ -171,8 +200,7 @@ El Pandita Dulcería 🍬
 
 def enviar_correo_contacto(mensaje_obj):
     """
-    Envía un correo de confirmación de mensaje recibido al cliente y notifica a la tienda
-    en segundo plano sin bloquear la página web.
+    Envía confirmación de mensaje recibido al cliente y notifica a la tienda en segundo plano.
     """
     if not mensaje_obj.email:
         return False
@@ -245,33 +273,18 @@ El Pandita Dulcería
 </html>
 """
 
-        remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'asaflocouavli@gmail.com')
         tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
 
-        # 1. Enviar al cliente en hilo asíncrono
-        msg_cliente = EmailMultiAlternatives(
-            subject=asunto_cliente,
-            body=mensaje_texto,
-            from_email=remitente,
-            to=[mensaje_obj.email],
-        )
-        msg_cliente.attach_alternative(mensaje_html, "text/html")
-        hilo_cli = threading.Thread(target=_enviar_correo_en_hilo, args=(msg_cliente,))
-        hilo_cli.daemon = True
-        hilo_cli.start()
+        # Lanzar en hilo asíncrono
+        def _job_contacto():
+            _despachar_correo(mensaje_obj.email, asunto_cliente, mensaje_texto, mensaje_html)
+            if tienda_email:
+                asunto_tienda = f"📩 [NUEVO CONTACTO] {nombre_completo} - {asunto_tema}"
+                _despachar_correo(tienda_email, asunto_tienda, f"Nuevo mensaje:\nNombre: {nombre_completo}\nEmail: {mensaje_obj.email}\nTel: {mensaje_obj.telefono}\nAsunto: {asunto_tema}\n\nMensaje:\n{mensaje_obj.mensaje}", mensaje_html)
 
-        # 2. Notificar a la tienda en hilo asíncrono
-        if tienda_email:
-            asunto_tienda = f"📩 [NUEVO CONTACTO] {nombre_completo} - {asunto_tema}"
-            msg_tienda = EmailMultiAlternatives(
-                subject=asunto_tienda,
-                body=f"Nuevo mensaje:\nNombre: {nombre_completo}\nEmail: {mensaje_obj.email}\nTel: {mensaje_obj.telefono}\nAsunto: {asunto_tema}\n\nMensaje:\n{mensaje_obj.mensaje}",
-                from_email=remitente,
-                to=[tienda_email],
-            )
-            hilo_tienda = threading.Thread(target=_enviar_correo_en_hilo, args=(msg_tienda,))
-            hilo_tienda.daemon = True
-            hilo_tienda.start()
+        t = threading.Thread(target=_job_contacto)
+        t.daemon = True
+        t.start()
 
         return True
     except Exception as e:

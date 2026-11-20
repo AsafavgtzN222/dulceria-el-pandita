@@ -147,15 +147,17 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '').strip()
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '').replace(' ', '').strip()
-EMAIL_TIMEOUT = 5  # Evita que el servidor se congele si la red/puerto falla
+EMAIL_TIMEOUT = 3  # Timeout de 3s máximo
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'El Pandita Dulceria <asaflocouavli@gmail.com>')
 TIENDA_NOTIFY_EMAIL = os.environ.get('TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
 
-# Si no hay usuario SMTP configurado, imprimir emails en consola sin dar error
-if EMAIL_HOST_USER:
+# En el plan gratuito de Render, los puertos SMTP (587, 465) están bloqueados por firewall.
+# Por seguridad, solo activar SMTP si se habilita explícitamente con ENABLE_SMTP=True.
+if os.environ.get('ENABLE_SMTP') == 'True' and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 LOGGING = {
     'version': 1,

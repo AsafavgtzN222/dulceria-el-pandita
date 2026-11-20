@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 import json
 
@@ -10,8 +10,13 @@ from .emails import enviar_correo_pedido, enviar_correo_contacto
 
 # ─── Páginas simples ──────────────────────────────────────────────────────────
 
+def ping(request):
+    return HttpResponse("PONG " + request.method)
+
+
 def inicio(request):
     return render(request, 'index.html')
+
 
 
 def servicios(request):
