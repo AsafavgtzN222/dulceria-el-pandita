@@ -31,9 +31,17 @@ def _enviar_via_resend(to_email, subject, text_body, html_body, api_key):
                 "User-Agent": "ElPanditaDulceria/1.0"
             }
         )
-        with urllib.request.urlopen(req, timeout=5) as response:
+        with urllib.request.urlopen(req, timeout=8) as response:
             logger.info("Correo enviado exitosamente vía Resend HTTPS a %s (Status: %s)", to_email, response.status)
             return True
+    except urllib.error.HTTPError as he:
+        detalle = ""
+        try:
+            detalle = he.read().decode('utf-8', errors='replace')
+        except Exception:
+            pass
+        logger.warning("No se pudo enviar via Resend a %s: HTTP %s - %s", to_email, he.code, detalle or he.reason)
+        return False
     except Exception as e:
         logger.warning("No se pudo enviar vía Resend a %s: %s", to_email, e)
         return False
@@ -44,6 +52,11 @@ def _despachar_correo(to_email, subject, text_body, html_body):
     resend_key = os.environ.get('RESEND_API_KEY', '').strip()
 
     if resend_key:
+        if not resend_key.startswith('re_'):
+            logger.warning(
+                "ATENCIÓN: La variable RESEND_API_KEY no parece ser una clave de Resend válida (debe comenzar con 're_'). Valor actual detectado: '%s...'",
+                resend_key[:6]
+            )
         _enviar_via_resend(to_email, subject, text_body, html_body, resend_key)
     else:
         try:
