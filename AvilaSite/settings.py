@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'members',
 ]
 MIDDLEWARE = [
+    'members.middleware.ExceptionLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
