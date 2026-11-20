@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Servicios de El Pandita — Arreglos para fiestas, piñatas, mesas de dulces, paquetes personalizados y más." />
+  <title>Servicios | El Pandita Dulcería</title>
+  <link rel="stylesheet" href="{% static 'css/Styles.css' %}" />
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="{% url 'inicio' %}" class="logo">
+      <div class="logo-img-wrap">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+      </div>
+      <div>
+        <span class="logo-nombre">El Pandita</span>
+        <span class="logo-subtitulo">Dulcería</span>
+      </div>
+    </a>
+    <button class="hamburger" aria-label="Menú" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="nav-principal">
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}" class="activo">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        <li><a href="{% url 'pagar' %}">Pagar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="hero-interno hero-servicios">
+  <p class="breadcrumb"><a href="{% url 'inicio' %}">Inicio</a> › Servicios</p>
+  <h1>Nuestros Servicios 🎉</h1>
+  <p>Hacemos de cada celebración un momento lleno de dulzura y color. ¡Déjanos sorprenderte!</p>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
+
+    <h2 class="titulo-seccion">¿Qué <span>ofrecemos?</span></h2>
+    <div class="separador"><span class="separador-icono">🎁</span></div>
+    <p class="subtitulo-seccion">Servicios pensados para que tu evento sea memorable y dulce.</p>
+
+    <div class="servicio-card">
+      <div class="servicio-img">
+        <img src="{% static 'img/Mesa-dulces.jpeg' %}" alt="Mesa de Dulces" style="width:100%;height:100%;min-height:300px;object-fit:cover;">
+      </div>
+      <div class="servicio-contenido">
+        <div class="servicio-icono">🍭</div>
+        <h3>Mesas de Dulces</h3>
+        <p>Creamos mesas de dulces temáticas para tu evento: cumpleaños, baby shower, boda, bautizo y más.</p>
+        <ul class="servicio-lista">
+          <li>Montaje y decoración incluidos</li>
+          <li>Más de 15 tipos de dulces disponibles</li>
+          <li>Temáticas personalizadas</li>
+          <li>Entrega a domicilio disponible</li>
+        </ul>
+        <a href="{% url 'contacto' %}" class="btn btn-rojo">Cotizar 🎉</a>
+      </div>
+    </div>
+
+    <div class="servicio-card invertir">
+      <div class="servicio-img">
+        <img src="{% static 'img/Piñata.jpeg' %}" alt="Piñatas y Rellenos" style="width:100%;height:100%;min-height:300px;object-fit:cover;">
+      </div>
+      <div class="servicio-contenido">
+        <div class="servicio-icono">🎊</div>
+        <h3>Piñatas y Rellenos</h3>
+        <p>Vendemos piñatas de todas formas y colores, y las rellenamos con los dulces que elijas.</p>
+        <ul class="servicio-lista">
+          <li>Piñatas de cartón y papel maché</li>
+          <li>Relleno personalizado a tu gusto</li>
+          <li>Múltiples tamaños disponibles</li>
+          <li>Pedidos con anticipación</li>
+        </ul>
+        <a href="{% url 'contacto' %}" class="btn btn-rojo">Cotizar 🎊</a>
+      </div>
+    </div>
+
+    <div class="servicio-card">
+      <div class="servicio-img">
+        <img src="{% static 'img/Bolsas-recuerdo.jpeg' %}" alt="Bolsas y Recuerdos" style="width:100%;height:100%;min-height:300px;object-fit:cover;">
+      </div>
+      <div class="servicio-contenido">
+        <div class="servicio-icono">🎁</div>
+        <h3>Bolsas y Recuerdos</h3>
+        <p>Preparamos bolsas de dulces personalizadas como recuerdos para tus invitados.</p>
+        <ul class="servicio-lista">
+          <li>Desde 10 bolsas en adelante</li>
+          <li>Personalización de bolsa y contenido</li>
+          <li>Etiquetas personalizadas incluidas</li>
+          <li>Entrega puntual garantizada</li>
+        </ul>
+        <a href="{% url 'contacto' %}" class="btn btn-rojo">Cotizar 🎁</a>
+      </div>
+    </div>
+
+    <div class="servicio-card invertir">
+      <div class="servicio-img">
+        <img src="{% static 'img/Mayoreo.jpeg' %}" alt="Venta por Mayoreo" style="width:100%;height:100%;min-height:300px;object-fit:cover;">
+      </div>
+      <div class="servicio-contenido">
+        <div class="servicio-icono">🏢</div>
+        <h3>Venta por Mayoreo</h3>
+        <p>¿Tienes un negocio o necesitas grandes cantidades? Te ofrecemos precios especiales en compras por mayoreo.</p>
+        <ul class="servicio-lista">
+          <li>Precios especiales en volumen</li>
+          <li>Gran variedad de marcas y productos</li>
+          <li>Asesoría de surtido incluida</li>
+          <li>Facturación disponible</li>
+        </ul>
+        <a href="{% url 'contacto' %}" class="btn btn-rojo">Consultar precios</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="seccion" style="background:#fff1e6; padding-top:0;">
+  <div class="contenedor">
+    <h2 class="titulo-seccion">¿Cómo <span>funciona?</span></h2>
+    <div class="separador"><span class="separador-icono">📋</span></div>
+    <p class="subtitulo-seccion">Pedir tu servicio con El Pandita es muy sencillo. ¡Solo 4 pasos!</p>
+    <div class="proceso-grid">
+      <div class="paso-card"><div class="paso-numero">1</div><h4>Contáctanos</h4><p>Escríbenos por WhatsApp, correo o llama directamente.</p></div>
+      <div class="paso-card"><div class="paso-numero">2</div><h4>Cotizamos</h4><p>Te enviamos una cotización personalizada sin costo ni compromiso.</p></div>
+      <div class="paso-card"><div class="paso-numero">3</div><h4>Confirmamos</h4><p>Aceptas la propuesta y apartamos tu fecha con un pequeño anticipo.</p></div>
+      <div class="paso-card"><div class="paso-numero">4</div><h4>¡Disfrutas!</h4><p>Entregamos tu pedido puntual y listo para sorprender a todos. 🎉</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-banner bg-rojo">
+  <h2>¿Tienes un evento próximo?</h2>
+  <p>Contáctanos con anticipación para asegurar tu fecha y recibir la mejor atención.</p>
+  <a href="{% url 'contacto' %}" class="btn btn-amarillo">¡Empieza a planear! 🎈</a>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo">El Pandita</div>
+      <p>Tu dulcería de confianza con los sabores más ricos y coloridos.</p>
+      <div class="footer-social">
+        <a href="#">📘</a>
+        <a href="#">📸</a>
+        <a href="#">💬</a>
+        <a href="#">🎵</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Páginas</h4>
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <p>📍 Col. San Juan, Xicoténcatl, Tamps.</p>
+      <p>📞 81 3712 2570</p>
+      <p>📧 asaflocouavli@gmail.com</p>
+      <p>🕐 Lun–Sáb: 9am – 8pm</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2025 El Pandita Dulcería — Todos los derechos reservados 🐼
+  </div>
+</footer>
+
+<script src="{% static 'js/Main.js' %}"></script>
+</body>
+</html>

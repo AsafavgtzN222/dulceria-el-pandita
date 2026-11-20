@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Conoce la historia de El Pandita Dulcería — nuestra misión, visión y el equipo detrás de los mejores dulces." />
+  <title>Nosotros | El Pandita Dulcería</title>
+  <link rel="stylesheet" href="{% static 'css/Styles.css' %}" />
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="{% url 'inicio' %}" class="logo">
+      <div class="logo-img-wrap">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+      </div>
+      <div>
+        <span class="logo-nombre">El Pandita</span>
+        <span class="logo-subtitulo">Dulcería</span>
+      </div>
+    </a>
+    <button class="hamburger" aria-label="Menú" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="nav-principal">
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}" class="activo">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        <li><a href="{% url 'pagar' %}">Pagar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="hero-interno hero-nosotros">
+  <p class="breadcrumb"><a href="{% url 'inicio' %}">Inicio</a> › Nosotros</p>
+  <h1>Conoce El Pandita 🐼</h1>
+  <p>Una historia endulzada con amor, trabajo y la pasión por compartir sabores únicos con nuestra comunidad.</p>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
+    <div class="historia-grid">
+      <div class="historia-img-wrap">
+        <img src="{% static 'img/Tienda.jpeg' %}" alt="Tienda El Pandita" style="width:100%;height:420px;object-fit:cover;">
+      </div>
+      <div class="historia-texto">
+        <h2>Nuestra <span>historia</span></h2>
+        <p>El Pandita nació de un sueño sencillo pero poderoso: crear un lugar donde la alegría y el sabor se encontraran en cada rincón. Lo que comenzó como un pequeño puesto de dulces en el mercado local, hoy es una dulcería querida por toda la comunidad.</p>
+        <p>Desde el primer día, nuestra prioridad ha sido ofrecer productos de calidad, con precios accesibles y la mejor atención al cliente. Cada dulce que vendemos está elegido con cariño.</p>
+        <p>Creemos que los dulces no son solo un alimento: son recuerdos, son sonrisas, son celebraciones. Y eso es exactamente lo que queremos darte cada vez que visites El Pandita.</p>
+        <a href="{% url 'contacto' %}" class="btn btn-rojo" style="margin-top:.75rem;">Visítanos hoy 📍</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="seccion" style="background:#fff1e6; padding-top:0;">
+  <div class="contenedor">
+    <h2 class="titulo-seccion">Nuestra <span>esencia</span></h2>
+    <div class="separador"><span class="separador-icono">🌟</span></div>
+    <div class="mvv-grid">
+      <div class="mvv-card">
+        <div class="mvv-icono">🎯</div>
+        <h3>Misión</h3>
+        <p>Ofrecer a nuestros clientes la más amplia variedad de dulces con calidad garantizada, precios justos y una experiencia de compra alegre y memorable.</p>
+      </div>
+      <div class="mvv-card">
+        <div class="mvv-icono">🔭</div>
+        <h3>Visión</h3>
+        <p>Ser la dulcería de referencia de la región, reconocida por su variedad, innovación y el cariño con que atendemos a cada cliente.</p>
+      </div>
+      <div class="mvv-card">
+        <div class="mvv-icono">💛</div>
+        <h3>Valores</h3>
+        <p>Honestidad, calidad, amor por lo que hacemos, atención personalizada y compromiso con nuestra comunidad. Cada cliente es parte de nuestra familia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:start;">
+
+      <div>
+        <h2 class="titulo-seccion" style="text-align:left; margin-bottom:.5rem;">Nuestra <span>trayectoria</span></h2>
+        <div class="separador" style="justify-content:flex-start; margin-left:0;"><span class="separador-icono">📅</span></div>
+        <p style="color:var(--gris); margin-bottom:2rem;">Un recorrido lleno de sabor, aprendizaje y mucho cariño.</p>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-anio">2019</div>
+            <h4>El comienzo</h4>
+            <p>Abrimos nuestro primer puesto en el mercado local con apenas 50 productos.</p>
+          </div>
+          <div class="tl-item">
+            <div class="tl-anio">2020</div>
+            <h4>Nuestra primera tienda</h4>
+            <p>Rentamos un local propio y ampliamos el catálogo a más de 100 productos.</p>
+          </div>
+          <div class="tl-item">
+            <div class="tl-anio">2022</div>
+            <h4>Servicios para eventos</h4>
+            <p>Comenzamos a ofrecer mesas de dulces y paquetes personalizados.</p>
+          </div>
+          <div class="tl-item">
+            <div class="tl-anio">2024</div>
+            <h4>+500 clientes felices</h4>
+            <p>Alcanzamos más de 500 clientes frecuentes y llegamos a las redes sociales.</p>
+          </div>
+          <div class="tl-item">
+            <div class="tl-anio">2025</div>
+            <h4>¡Seguimos creciendo!</h4>
+            <p>Nueva tienda renovada, catálogo de +200 productos y más servicios para ti.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="titulo-seccion" style="text-align:left; margin-bottom:.5rem;">Nuestro <span>equipo</span></h2>
+        <div class="separador" style="justify-content:flex-start; margin-left:0;"><span class="separador-icono">👥</span></div>
+        <p style="color:var(--gris); margin-bottom:2rem;">Las personas detrás de cada sonrisa y cada dulce.</p>
+        <div class="equipo-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="miembro-card">
+            <div class="miembro-foto">
+              <img src="{% static 'img/Dueño.jpeg' %}" alt="Fundador El Pandita" style="width:100%;height:180px;object-fit:cover;border-radius:var(--radio) var(--radio) 0 0;">
+            </div>
+            <div class="miembro-info">
+              <div class="miembro-nombre">Asaf Avila</div>
+              <div class="miembro-rol">Fundador</div>
+              <div class="miembro-desc">El alma detrás de El Pandita. Apasionado de los dulces y la atención al cliente.</div>
+            </div>
+          </div>
+          <div class="miembro-card">
+            <div class="miembro-foto">
+              <img src="{% static 'img/logo-pandita.png' %}" alt="Colaborador El Pandita" style="width:100%;height:180px;object-fit:contain;background:#fff8f8;border-radius:var(--radio) var(--radio) 0 0;">
+            </div>
+            <div class="miembro-info">
+              <div class="miembro-nombre">Joel Avila</div>
+              <div class="miembro-rol">Atención al Cliente</div>
+              <div class="miembro-desc">Siempre con una sonrisa lista y la recomendación perfecta para cada gusto.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cta-banner bg-amarillo">
+  <h2>¿Quieres ser parte de nuestra historia?</h2>
+  <p>Visítanos o escríbenos. Cada cliente nuevo es una página más en nuestra historia dulce.</p>
+  <a href="{% url 'contacto' %}" class="btn btn-rojo">Ir a Contacto</a>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo">El Pandita</div>
+      <p>Tu dulcería de confianza con los sabores más ricos y coloridos.</p>
+      <div class="footer-social">
+        <a href="#">📘</a>
+        <a href="#">📸</a>
+        <a href="#">💬</a>
+        <a href="#">🎵</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Páginas</h4>
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <p>📍 Col. San Juan, Xicoténcatl, Tamps.</p>
+      <p>📞 81 3712 2570</p>
+      <p>📧 asaflocouavli@gmail.com</p>
+      <p>🕐 Lun–Sáb: 9am – 8pm</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2025 El Pandita Dulcería — Todos los derechos reservados 🐼
+  </div>
+</footer>
+
+<script src="{% static 'js/Main.js' %}"></script>
+</body>
+</html>

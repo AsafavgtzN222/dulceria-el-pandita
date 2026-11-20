@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Contacta a El Pandita Dulcería." />
+  <title>Contacto | El Pandita Dulcería</title>
+  <link rel="stylesheet" href="{% static 'css/Styles.css' %}" />
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="{% url 'inicio' %}" class="logo">
+      <div class="logo-img-wrap">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+      </div>
+      <div>
+        <span class="logo-nombre">El Pandita</span>
+        <span class="logo-subtitulo">Dulcería</span>
+      </div>
+    </a>
+    <button class="hamburger" aria-label="Menú" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="nav-principal">
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}" class="activo">Contacto</a></li>
+        <li><a href="{% url 'pagar' %}">Pagar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="hero-interno hero-contacto">
+  <p class="breadcrumb"><a href="{% url 'inicio' %}">Inicio</a> › Contacto</p>
+  <h1>Contáctanos 💬</h1>
+  <p>Estamos para atenderte con gusto. Escríbenos o visítanos en tienda.</p>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
+    <div class="contacto-grid">
+
+      <div>
+
+        <h2 class="titulo-seccion" style="text-align:left; font-size:1.8rem; margin-bottom:1.5rem;">
+          Encuéntranos <span>aquí</span>
+        </h2>
+
+        <div class="info-card">
+          <div class="info-icono">📍</div>
+          <div class="info-contenido">
+            <h4>Dirección</h4>
+            <a href="https://www.google.com/maps/search/?api=1&query=Col.+San+Juan,+89758+Xicot%C3%A9ncatl,+Tamaulipas" target="_blank">
+              Col. San Juan, 89758 Xicoténcatl, Tamps.
+            </a>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icono">📞</div>
+          <div class="info-contenido">
+            <h4>Teléfono</h4>
+            <a href="https://wa.me/528137122570?text=Hola%20El%20Pandita,%20me%20interesa%20obtener%20información." target="_blank">
+              81 3712 2570
+            </a>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icono">📧</div>
+          <div class="info-contenido">
+            <h4>Correo electrónico</h4>
+            <a href="mailto:asaflocouavli@gmail.com">asaflocouavli@gmail.com</a>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icono">📸</div>
+          <div class="info-contenido">
+            <h4>Redes sociales</h4>
+            <p>
+              <a href="#">Facebook</a> |
+              <a href="#">Instagram</a> |
+              <a href="#">TikTok</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="info-card" style="flex-direction:column; gap:.75rem;">
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <div class="info-icono">🕐</div>
+            <div class="info-contenido">
+              <h4>Horarios de atención</h4>
+            </div>
+          </div>
+          <table class="horario-tabla">
+            <tr>
+              <td>Lunes – Viernes</td>
+              <td>9:00 am – 8:00 pm</td>
+            </tr>
+            <tr>
+              <td>Sábado</td>
+              <td>9:00 am – 6:00 pm</td>
+            </tr>
+            <tr>
+              <td>Domingo</td>
+              <td>Cerrado</td>
+            </tr>
+          </table>
+        </div>
+
+        <a href="https://wa.me/528137122570?text=Hola%20El%20Pandita,%20me%20interesa%20conocer%20sus%20productos."
+          target="_blank"
+          class="btn btn-verde"
+          style="width:100%; margin-top:.75rem;">
+          💬 Escríbenos por WhatsApp
+        </a>
+
+        <div style="margin-top:1.5rem; border-radius:var(--radio); overflow:hidden; box-shadow:var(--sombra1);">
+          <iframe
+            src="https://www.google.com/maps?q=Col.+San+Juan,+89758+Xicot%C3%A9ncatl,+Tamaulipas&output=embed"
+            width="100%"
+            height="260"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy">
+          </iframe>
+        </div>
+
+      </div>
+
+      <div class="form-card">
+
+        <h3>Envíanos un mensaje</h3>
+        <p>Déjanos tus datos y te responderemos lo antes posible.</p>
+
+        <form action="https://formsubmit.co/asaflocouavli@gmail.com" method="POST">
+
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_next" value="gracias.html">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre *</label>
+              <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+            </div>
+            <div class="form-group">
+              <label for="apellido">Apellido</label>
+              <input type="text" id="apellido" name="apellido" placeholder="Tu apellido">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="telefono">Teléfono</label>
+              <input type="tel" id="telefono" name="telefono" placeholder="81 3712 2570">
+            </div>
+            <div class="form-group">
+              <label for="email">Correo electrónico *</label>
+              <input type="email" id="email" name="email" placeholder="tu@correo.com" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="asunto">Asunto</label>
+            <select id="asunto" name="asunto">
+              <option value="">— Selecciona un tema —</option>
+              <option value="productos">Información sobre productos</option>
+              <option value="eventos">Servicio para eventos</option>
+              <option value="mayoreo">Venta por mayoreo</option>
+              <option value="pedido">Hacer un pedido</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="mensaje">Mensaje *</label>
+            <textarea id="mensaje" name="mensaje" placeholder="Cuéntanos en qué podemos ayudarte..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-rojo form-submit">
+            Enviar mensaje 🚀
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cta-banner bg-rojo">
+  <h2>¿Prefieres visitarnos en persona?</h2>
+  <p>Te esperamos con los brazos y los dulces abiertos.</p>
+  <a href="https://www.google.com/maps/search/?api=1&query=Col.+San+Juan,+89758+Xicot%C3%A9ncatl,+Tamaulipas"
+    target="_blank"
+    class="btn btn-amarillo">
+    Ver en Google Maps 📍
+  </a>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo">El Pandita</div>
+      <p>Tu dulcería de confianza con los sabores más ricos y coloridos.</p>
+      <div class="footer-social">
+        <a href="#">📘</a>
+        <a href="#">📸</a>
+        <a href="#">💬</a>
+        <a href="#">🎵</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Páginas</h4>
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <p>📍 Col. San Juan, Xicoténcatl, Tamps.</p>
+      <p>📞 81 3712 2570</p>
+      <p>📧 asaflocouavli@gmail.com</p>
+      <p>🕐 Lun–Sáb: 9am – 8pm</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2025 El Pandita Dulcería — Todos los derechos reservados 🐼
+  </div>
+</footer>
+
+<script src="{% static 'js/Main.js' %}"></script>
+</body>
+</html>

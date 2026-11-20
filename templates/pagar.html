@@ -1,0 +1,566 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Realiza tu pedido en El Pandita Dulcería — pago seguro por transferencia o WhatsApp." />
+  <title>Pagar | El Pandita Dulcería</title>
+  <link rel="stylesheet" href="{% static 'css/Styles.css' %}" />
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="{% url 'inicio' %}" class="logo">
+      <div class="logo-img-wrap">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita">
+      </div>
+      <div>
+        <span class="logo-nombre">El Pandita</span>
+        <span class="logo-subtitulo">Dulcería</span>
+      </div>
+    </a>
+    <button class="hamburger" aria-label="Menú" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="nav-principal">
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        <li><a href="{% url 'pagar' %}" class="activo">🛒 Pagar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="hero-interno hero-pago">
+  <p class="breadcrumb"><a href="{% url 'inicio' %}">Inicio</a> › Pagar</p>
+  <h1>Realiza tu Pedido 🛒</h1>
+  <p>Elige tus dulces favoritos, selecciona cómo pagar y listo. ¡Te contactamos enseguida!</p>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
+
+    {% if confirmado %}
+    <!-- ════════════════════════════════════════════════
+         CONFIRMACIÓN — pedido guardado en BD
+    ════════════════════════════════════════════════ -->
+    <div class="paso3-wrap">
+      <div class="pago-form-card">
+        <div class="conf-box">
+          <div class="conf-icono">🎉</div>
+          <div class="conf-titulo">¡Pedido #{{ pedido.pk }} recibido!</div>
+          <p>Hemos guardado tu solicitud. Nos comunicaremos contigo por WhatsApp para confirmar los detalles. ¡Gracias por elegir El Pandita! 🐼</p>
+
+          <div class="conf-detalle">
+            <strong>👤 Cliente:</strong> {{ pedido.nombre }} {{ pedido.apellido }}<br>
+            <strong>📞 Contacto:</strong> {{ pedido.telefono }}<br>
+            {% if pedido.email %}<strong>📧 Email:</strong> {{ pedido.email }}<br>{% endif %}
+            <strong>📦 Entrega:</strong> {{ pedido.entrega }}<br>
+            {% if pedido.direccion %}<strong>🏠 Dirección:</strong> {{ pedido.direccion }}<br>{% endif %}
+            <strong>💳 Pago:</strong> {{ pedido.metodo_pago }}<br>
+            <strong>🍬 Productos:</strong><br>
+            {% for item in pedido.get_items %}
+              &nbsp;&nbsp;• {{ item.nombre }} × {{ item.cantidad }}<br>
+            {% endfor %}
+            <strong>💰 Total: ${{ pedido.total|floatformat:0 }} MXN</strong>
+          </div>
+
+          <div class="conf-btn-bloque">
+            <a href="https://wa.me/528137122570?text=¡Hola%20El%20Pandita!%20🐼%0APedido%20%23{{ pedido.pk }}%0ACliente%3A%20{{ pedido.nombre }}%0ATotal%3A%20%24{{ pedido.total|floatformat:0 }}%20MXN"
+               target="_blank" class="btn btn-verde">
+              💬 Confirmar por WhatsApp
+            </a>
+            <a href="{% url 'productos' %}" class="btn btn-outline">
+              Ver más productos
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <!-- ════════════════════════════════════════════════
+         BARRA DE PROGRESO
+    ════════════════════════════════════════════════ -->
+    <div class="progreso-barra" id="progreso-barra">
+      <div class="paso-prog {% if not mostrar_paso2 %}activo{% else %}completo{% endif %}" id="prog-1">
+        <div class="paso-circulo">{% if mostrar_paso2 %}✓{% else %}1{% endif %}</div>
+        <div class="paso-label">Tu pedido</div>
+      </div>
+      <div class="linea-prog {% if mostrar_paso2 %}completo{% endif %}" id="linea-1"></div>
+      <div class="paso-prog {% if mostrar_paso2 %}activo{% endif %}" id="prog-2">
+        <div class="paso-circulo">2</div>
+        <div class="paso-label">Tus datos</div>
+      </div>
+      <div class="linea-prog" id="linea-2"></div>
+      <div class="paso-prog" id="prog-3">
+        <div class="paso-circulo">3</div>
+        <div class="paso-label">¡Listo!</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+         PASO 1 — Carrito + mini-catálogo
+    ════════════════════════════════════════════════ -->
+    <div id="paso1" {% if mostrar_paso2 %}class="oculto"{% endif %}>
+      <div class="pago-grid">
+
+        <!-- Mini-catálogo desde la BD -->
+        <div class="agregar-card">
+          <h3>🍬 Agrega tus dulces</h3>
+          <p>Selecciona los productos que quieres pedir.</p>
+
+          <div class="mini-filtros" id="mini-filtros">
+            <button class="mini-filtro activo" onclick="filtrarMini('todos', this)">🍭 Todos</button>
+            {% regroup productos_lista by categoria as cats %}
+            {% for cat in cats %}
+              <button class="mini-filtro" onclick="filtrarMini('{{ cat.grouper|lower }}', this)">{{ cat.grouper }}</button>
+            {% endfor %}
+          </div>
+
+          <div class="mini-grid" id="mini-grid">
+            {% for p in productos_lista %}
+            <div class="mini-producto" data-cat="{{ p.categoria|lower }}">
+              {% if p.imagen %}
+              <img class="mini-img" src="{% static 'img/' %}{{ p.imagen }}" alt="{{ p.nombre }}">
+              {% else %}
+              <div class="mini-emoji">🍬</div>
+              {% endif %}
+              <div class="mini-nombre">{{ p.nombre }}</div>
+              <div class="mini-precio">${{ p.precio|floatformat:0 }}</div>
+              <div class="mini-cant-ctrl">
+                <button type="button" onclick="cambiarMini({{ p.pk }}, -1)">−</button>
+                <span class="num" id="mini-cant-{{ p.pk }}">1</span>
+                <button type="button" onclick="cambiarMini({{ p.pk }}, 1)">+</button>
+              </div>
+              <button class="mini-agregar" id="mini-btn-{{ p.pk }}"
+                      onclick="agregarDesdeCarrito({{ p.pk }}, '{{ p.nombre|escapejs }}')">
+                + Agregar
+              </button>
+            </div>
+            {% empty %}
+            <p>No hay productos disponibles.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Resumen carrito -->
+        <div class="resumen-card" id="resumen-card">
+          <h3>🛒 Tu pedido</h3>
+
+          <div class="resumen-vacio" id="resumen-vacio">
+            <div class="vacio-icono">🍬</div>
+            <p>¡Tu carrito está vacío!</p>
+            <p>Agrega dulces desde el catálogo.</p>
+          </div>
+
+          <ul class="resumen-items" id="resumen-items"></ul>
+
+          <div id="resumen-totales" class="oculto">
+            <div class="resumen-linea">
+              <span>Subtotal</span>
+              <span id="subtotal-val">$0</span>
+            </div>
+            <div class="resumen-linea">
+              <span>Envío</span>
+              <span class="envio-coordinar">A coordinar 📦</span>
+            </div>
+            <div class="resumen-total">
+              <span>Total</span>
+              <span id="total-val">$0</span>
+            </div>
+            <button class="btn btn-rojo btn-pagar" onclick="irPaso2()">
+              Continuar 👉
+            </button>
+            <p class="nota-seguro">🔒 Tus datos están seguros con nosotros</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+         PASO 2 — Formulario Django
+    ════════════════════════════════════════════════ -->
+    <div id="paso2" class="paso2-wrap {% if not mostrar_paso2 %}oculto{% endif %}">
+
+      {% if error_stock_general %}
+      <div class="error-alerta-stock">
+        ⚠️ {{ error_stock_general }}
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'pagar' %}" id="form-pedido">
+        {% csrf_token %}
+
+        <div class="pago-form-card">
+          <h3>📋 Tus datos de contacto</h3>
+          <p>Los usaremos para coordinar tu pedido y envío.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }} *</label>
+              {{ form.nombre }}
+              {% if form.nombre.errors %}
+                <ul class="errorlist">{% for e in form.nombre.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.apellido.id_for_label }}">{{ form.apellido.label }}</label>
+              {{ form.apellido }}
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="{{ form.telefono.id_for_label }}">{{ form.telefono.label }} *</label>
+              {{ form.telefono }}
+              {% if form.telefono.errors %}
+                <ul class="errorlist">{% for e in form.telefono.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+              {{ form.email }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.entrega.id_for_label }}">{{ form.entrega.label }} *</label>
+            {{ form.entrega }}
+            {% if form.entrega.errors %}
+              <ul class="errorlist">{% for e in form.entrega.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+          </div>
+
+          <div class="form-group oculto" id="grupo-direccion">
+            <label for="{{ form.direccion.id_for_label }}">{{ form.direccion.label }}</label>
+            {{ form.direccion }}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.notas.id_for_label }}">{{ form.notas.label }}</label>
+            {{ form.notas }}
+          </div>
+        </div>
+
+        <div class="pago-form-card">
+          <h3>💳 Método de pago</h3>
+          <p>Selecciona cómo quieres pagar tu pedido.</p>
+
+          <div class="metodos-radio">
+            {% for radio in form.metodo_pago %}
+            <div class="metodo-radio-btn">
+              {{ radio.tag }}
+              <label for="{{ radio.id_for_label }}">
+                <span class="metodo-icono">
+                  {% if radio.data.value == 'transferencia' %}🏦
+                  {% elif radio.data.value == 'whatsapp' %}💬
+                  {% else %}💵{% endif %}
+                </span>
+                <span class="metodo-nombre">
+                  {% if radio.data.value == 'transferencia' %}Transferencia
+                  {% elif radio.data.value == 'whatsapp' %}WhatsApp
+                  {% else %}Efectivo{% endif %}
+                </span>
+                <span class="metodo-desc">
+                  {% if radio.data.value == 'transferencia' %}SPEI / depósito
+                  {% elif radio.data.value == 'whatsapp' %}Coordinamos contigo
+                  {% else %}Al recoger en tienda{% endif %}
+                </span>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+          {% if form.metodo_pago.errors %}
+            <ul class="errorlist">{% for e in form.metodo_pago.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+
+          <!-- Info Transferencia -->
+          <div class="info-transferencia" id="info-transferencia">
+            <h4>📋 Datos para transferencia / depósito</h4>
+            <div class="banco-dato">
+              <span class="label">Banco</span>
+              <span class="valor">BBVA / Bancomer</span>
+            </div>
+            <div class="banco-dato">
+              <span class="label">Titular</span>
+              <span class="valor">Asaf Avila</span>
+            </div>
+            <div class="banco-dato">
+              <span class="label">CLABE interbancaria</span>
+              <div class="banco-dato-valor">
+                <span class="valor" id="clabe-val">012345678901234567</span>
+                <button type="button" class="copiar-btn" onclick="copiar('clabe-val', this)">Copiar</button>
+              </div>
+            </div>
+            <div class="banco-dato">
+              <span class="label">Número de tarjeta</span>
+              <div class="banco-dato-valor">
+                <span class="valor" id="tarjeta-val">4152 3131 XXXX XXXX</span>
+                <button type="button" class="copiar-btn" onclick="copiar('tarjeta-val', this)">Copiar</button>
+              </div>
+            </div>
+            <p class="aviso-comprobante">⚠️ Guarda tu comprobante y envíalo por WhatsApp al <strong>81 3712 2570</strong> para confirmar tu pedido.</p>
+          </div>
+
+          <!-- Info WhatsApp -->
+          <div class="info-whatsapp" id="info-whatsapp">
+            <p>📱 Te contactaremos directamente por WhatsApp para coordinar el pago y la entrega de tu pedido.</p>
+            <p>También puedes escribirnos tú primero al <strong>81 3712 2570</strong>.</p>
+          </div>
+
+          <!-- Info Efectivo -->
+          <div class="info-efectivo" id="info-efectivo">
+            <p>💵 Paga en efectivo al recoger tu pedido directamente en nuestra tienda:</p>
+            <p><strong>📍 Col. San Juan, 89758 Xicoténcatl, Tamaulipas</strong></p>
+            <p>🕐 Lunes a Viernes: 9am – 8pm &nbsp;|&nbsp; Sábado: 9am – 6pm</p>
+          </div>
+
+          <div class="metodos-botones-nav">
+            <button type="button" class="btn btn-outline" onclick="irPaso1()">← Volver</button>
+            <button type="submit" class="btn btn-rojo btn-pagar">Confirmar pedido 🚀</button>
+          </div>
+          <p class="nota-seguro">🔒 Tu información está segura. Solo la usamos para atender tu pedido.</p>
+        </div>
+
+      </form>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% if not confirmado %}
+<section class="cta-banner bg-rojo" id="cta-pago">
+  <h2>¿Tienes dudas sobre tu pedido?</h2>
+  <p>Escríbenos por WhatsApp y te ayudamos con gusto.</p>
+  <a href="https://wa.me/528137122570?text=Hola%20El%20Pandita,%20tengo%20una%20duda%20sobre%20mi%20pedido." target="_blank" class="btn btn-amarillo">
+    💬 Escribir por WhatsApp
+  </a>
+</section>
+{% endif %}
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo">El Pandita</div>
+      <p>Tu dulcería de confianza con los sabores más ricos y coloridos.</p>
+      <div class="footer-social">
+        <a href="#">📘</a><a href="#">📸</a><a href="#">💬</a><a href="#">🎵</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Páginas</h4>
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <p>📍 Col. San Juan, Xicoténcatl, Tamps.</p>
+      <p>📞 81 3712 2570</p>
+      <p>📧 asaflocouavli@gmail.com</p>
+      <p>🕐 Lun–Sáb: 9am – 8pm</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2025 El Pandita Dulcería — Todos los derechos reservados 🐼
+  </div>
+</footer>
+
+<script src="{% static 'js/Main.js' %}"></script>
+<script>
+// ── CSRF ─────────────────────────────────────────────────────────────────────
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+
+// ── Cantidades mini-catálogo ──────────────────────────────────────────────────
+const miniCants = {};
+
+function cambiarMini(id, delta) {
+  if (!miniCants[id]) miniCants[id] = 1;
+  miniCants[id] = Math.max(1, miniCants[id] + delta);
+  document.getElementById('mini-cant-' + id).textContent = miniCants[id];
+}
+
+function agregarDesdeCarrito(id, nombre) {
+  const cantidad = miniCants[id] || 1;
+  const btn = document.getElementById('mini-btn-' + id);
+
+  fetch("{% url 'agregar_carrito' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ id, cantidad }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      btn.textContent = '✅ Agregado';
+      setTimeout(() => { btn.textContent = '+ Agregar'; }, 1200);
+      cargarCarrito();
+    }
+  });
+}
+
+// ── Carrito desde sesión ──────────────────────────────────────────────────────
+let carritoActual = [];
+
+function cargarCarrito() {
+  fetch("{% url 'carrito_json' %}")
+    .then(r => r.json())
+    .then(data => {
+      carritoActual = data.carrito;
+      renderCarrito(data.carrito, data.subtotal);
+    });
+}
+
+function renderCarrito(carrito, subtotal) {
+  const vacio   = document.getElementById('resumen-vacio');
+  const lista   = document.getElementById('resumen-items');
+  const totales = document.getElementById('resumen-totales');
+  if (!vacio) return;
+
+  if (!carrito || carrito.length === 0) {
+    vacio.classList.remove('oculto');
+    lista.innerHTML = '';
+    totales.classList.add('oculto');
+    return;
+  }
+
+  vacio.classList.add('oculto');
+  totales.classList.remove('oculto');
+
+  lista.innerHTML = carrito.map(item => `
+    <li class="resumen-item">
+      <div class="item-nombre">${item.nombre}</div>
+      <div class="item-cant">
+        <button onclick="cambiarItemCarrito(${item.id}, -1)">−</button>
+        <span>${item.cantidad}</span>
+        <button onclick="cambiarItemCarrito(${item.id}, 1)">+</button>
+      </div>
+      <div class="item-precio">$${(item.precio * item.cantidad).toFixed(0)}</div>
+      <button class="item-borrar" onclick="eliminarItem(${item.id})" title="Eliminar">🗑</button>
+    </li>
+  `).join('');
+
+  document.getElementById('subtotal-val').textContent = '$' + subtotal.toFixed(0);
+  document.getElementById('total-val').textContent    = '$' + subtotal.toFixed(0);
+}
+
+function cambiarItemCarrito(id, delta) {
+  fetch("{% url 'actualizar_carrito' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ id, delta }),
+  })
+  .then(r => r.json().then(data => ({ ok: r.ok, data })))
+  .then(res => {
+    if (res.ok && res.data.ok) {
+      cargarCarrito();
+    } else {
+      const msg = (res.data && res.data.error) ? res.data.error : 'No es posible actualizar la cantidad';
+      alert(msg);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Error al actualizar el carrito');
+  });
+}
+
+function eliminarItem(id) {
+  fetch("{% url 'eliminar_carrito' %}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ id }),
+  })
+  .then(r => r.json())
+  .then(data => { if (data.ok) cargarCarrito(); });
+}
+
+// ── Pasos ─────────────────────────────────────────────────────────────────────
+function irPaso1() {
+  document.getElementById('paso1').classList.remove('oculto');
+  document.getElementById('paso2').classList.add('oculto');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function irPaso2() {
+  if (carritoActual.length === 0) {
+    alert('¡Agrega al menos un producto antes de continuar!');
+    return;
+  }
+  document.getElementById('paso1').classList.add('oculto');
+  document.getElementById('paso2').classList.remove('oculto');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Filtro mini-catálogo ──────────────────────────────────────────────────────
+function filtrarMini(cat, btn) {
+  document.querySelectorAll('.mini-filtro').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  document.querySelectorAll('.mini-producto').forEach(p => {
+    p.style.display = (cat === 'todos' || p.dataset.cat === cat) ? '' : 'none';
+  });
+}
+
+// ── Info método de pago ───────────────────────────────────────────────────────
+function actualizarInfoPago() {
+  const sel = document.querySelector('input[name="metodo_pago"]:checked');
+  ['transferencia', 'whatsapp', 'efectivo'].forEach(m => {
+    const el = document.getElementById('info-' + m);
+    if (el) el.classList.remove('visible');
+  });
+  if (sel) {
+    const el = document.getElementById('info-' + sel.value);
+    if (el) el.classList.add('visible');
+  }
+}
+
+// ── Dirección según tipo de entrega ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  cargarCarrito();
+
+  document.querySelectorAll('input[name="metodo_pago"]').forEach(r => {
+    r.addEventListener('change', actualizarInfoPago);
+  });
+  actualizarInfoPago();
+
+  const sel = document.getElementById('id_entrega');
+  if (sel) {
+    const mostrarDir = () => {
+      const gd = document.getElementById('grupo-direccion');
+      if (gd) {
+        if (sel.value === 'Envío a domicilio') gd.classList.remove('oculto');
+        else gd.classList.add('oculto');
+      }
+    };
+    sel.addEventListener('change', mostrarDir);
+    mostrarDir();
+  }
+});
+
+// ── Copiar CLABE / tarjeta ────────────────────────────────────────────────────
+function copiar(id, btn) {
+  const txt = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    btn.textContent = '¡Copiado!';
+    setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>

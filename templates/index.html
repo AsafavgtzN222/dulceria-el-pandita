@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="El Pandita — Dulcería artesanal con los sabores más dulces y coloridos." />
+  <title>Inicio | El Pandita Dulcería</title>
+  <link rel="stylesheet" href="{% static 'css/Styles.css' %}" />
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="{% url 'inicio' %}" class="logo">
+      <div class="logo-img-wrap">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+      </div>
+      <div>
+        <span class="logo-nombre">El Pandita</span>
+        <span class="logo-subtitulo">Dulcería</span>
+      </div>
+    </a>
+    <button class="hamburger" aria-label="Menú" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="nav-principal">
+      <ul>
+        <li><a href="{% url 'inicio' %}" class="activo">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        <li><a href="{% url 'pagar' %}">Pagar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="aparecer">
+      <div class="hero-badge">🍭 ¡Bienvenido a lo más dulce!</div>
+      <h1 class="hero-titulo">El sabor que<br/><span>enamora</span> tu paladar</h1>
+      <p class="hero-desc">Dulces artesanales, importados y tradicionales para todos los gustos. En El Pandita encontrarás colores, sabores y alegría en cada visita.</p>
+      <div class="hero-botones">
+        <a href="{% url 'productos' %}" class="btn btn-rojo">Ver Productos 🍬</a>
+        <a href="{% url 'contacto' %}" class="btn btn-amarillo">Contáctanos</a>
+      </div>
+    </div>
+    <div class="hero-imagen">
+      <div class="pandita-wrap flotar">
+        <span class="dec dec-1">🍭</span>
+        <span class="dec dec-2">🍡</span>
+        <span class="dec dec-3">🍫</span>
+        <span class="dec dec-4">🍬</span>
+        <img src="{% static 'img/logo-pandita.png' %}" alt="El Pandita Mascota" style="width:100%;max-width:380px;object-fit:contain;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stats-inner">
+    <div><div class="stat-numero">+200</div><div class="stat-etiqueta">Productos disponibles</div></div>
+    <div><div class="stat-numero">+500</div><div class="stat-etiqueta">Clientes felices</div></div>
+    <div><div class="stat-numero">+5</div><div class="stat-etiqueta">Años de dulzura</div></div>
+    <div><div class="stat-numero">100%</div><div class="stat-etiqueta">Sabor garantizado</div></div>
+  </div>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
+    <h2 class="titulo-seccion">Nuestras <span>categorías</span></h2>
+    <div class="separador"><span class="separador-icono">🍬</span></div>
+    <p class="subtitulo-seccion">Tenemos dulces para todos los gustos y momentos especiales.</p>
+    <div class="categorias-grid">
+      <div class="cat-card"><div class="cat-icono">🍭</div><div class="cat-nombre">Paletas</div></div>
+      <div class="cat-card"><div class="cat-icono">🍫</div><div class="cat-nombre">Chocolates</div></div>
+      <div class="cat-card"><div class="cat-icono">🍬</div><div class="cat-nombre">Gomitas</div></div>
+      <div class="cat-card"><div class="cat-icono">🌶️</div><div class="cat-nombre">Dulces enchilados</div></div>
+      <div class="cat-card"><div class="cat-icono">🎁</div><div class="cat-nombre">Paquetes regalo</div></div>
+      <div class="cat-card"><div class="cat-icono">🍡</div><div class="cat-nombre">Dulces tradicionales</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="seccion" style="background:#fff1e6; padding-top:0;">
+  <div class="contenedor">
+    <h2 class="titulo-seccion">Lo más <span>pedido</span></h2>
+    <div class="separador"><span class="separador-icono">⭐</span></div>
+    <p class="subtitulo-seccion">Los favoritos de nuestros clientes, ¡no te los puedes perder!</p>
+    <div class="grid-tarjetas">
+
+      <div class="tarjeta">
+        <img src="{% static 'img/Paleta-tamarindo.jpeg' %}" alt="Paleta de tamarindo" style="width:100%;height:200px;object-fit:cover;border-radius:var(--radio) var(--radio) 0 0;">
+        <div class="tarjeta-info">
+          <span class="badge badge-rojo">⭐ Favorito</span>
+          <div class="tarjeta-nombre">Paleta de tamarindo</div>
+          <div class="tarjeta-desc">Sabor intenso, cubierta de chile y sal. ¡Irresistible!</div>
+          <div class="tarjeta-pie">
+            <span class="precio">$15</span>
+            <a href="{% url 'productos' %}" class="btn btn-outline" style="padding:.45rem 1.2rem;font-size:.85rem;">Ver más</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <img src="{% static 'img/Gominolas-Sandia.jpeg' %}" alt="Gominolas de sandía" style="width:100%;height:200px;object-fit:cover;border-radius:var(--radio) var(--radio) 0 0;">
+        <div class="tarjeta-info">
+          <span class="badge badge-amarillo">🔥 Popular</span>
+          <div class="tarjeta-nombre">Gominolas de sandía</div>
+          <div class="tarjeta-desc">Suaves, jugosas y llenas de sabor frutal. Para toda la familia.</div>
+          <div class="tarjeta-pie">
+            <span class="precio">$20</span>
+            <a href="{% url 'productos' %}" class="btn btn-outline" style="padding:.45rem 1.2rem;font-size:.85rem;">Ver más</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <img src="{% static 'img/Caja-surtida.jpeg' %}" alt="Caja regalo surtida" style="width:100%;height:200px;object-fit:cover;border-radius:var(--radio) var(--radio) 0 0;">
+        <div class="tarjeta-info">
+          <span class="badge badge-verde">🎁 Especial</span>
+          <div class="tarjeta-nombre">Caja regalo surtida</div>
+          <div class="tarjeta-desc">Perfecta para regalar: mezcla de los mejores dulces de la tienda.</div>
+          <div class="tarjeta-pie">
+            <span class="precio">$120</span>
+            <a href="{% url 'productos' %}" class="btn btn-outline" style="padding:.45rem 1.2rem;font-size:.85rem;">Ver más</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;">
+      <a href="{% url 'productos' %}" class="btn btn-rojo">Ver todos los productos</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta-banner bg-rojo">
+  <h2>¿Quieres organizar tu evento con nosotros?</h2>
+  <p>Ofrecemos arreglos de dulces, piñatas y paquetes personalizados para fiestas, bodas y más.</p>
+  <a href="{% url 'servicios' %}" class="btn btn-amarillo">Ver nuestros servicios</a>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo">El Pandita</div>
+      <p>Tu dulcería de confianza con los sabores más ricos y coloridos.</p>
+      <div class="footer-social">
+        <a href="#">📘</a>
+        <a href="#">📸</a>
+        <a href="#">💬</a>
+        <a href="#">🎵</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Páginas</h4>
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <p>📍 Col. San Juan, Xicoténcatl, Tamps.</p>
+      <p>📞 81 3712 2570</p>
+      <p>📧 asaflocouavli@gmail.com</p>
+      <p>🕐 Lun–Sáb: 9am – 8pm</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2025 El Pandita Dulcería — Todos los derechos reservados 🐼
+  </div>
+</footer>
+
+<script src="{% static 'js/Main.js' %}"></script>
+</body>
+</html>
