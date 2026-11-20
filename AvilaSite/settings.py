@@ -148,8 +148,8 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '').strip()
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '').replace(' ', '').strip()
 EMAIL_TIMEOUT = 3  # Timeout de 3s máximo
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'El Pandita Dulceria <asaflocouavli@gmail.com>')
-TIENDA_NOTIFY_EMAIL = os.environ.get('TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'El Pandita Dulceria <asaflocouavila@gmail.com>')
+TIENDA_NOTIFY_EMAIL = os.environ.get('TIENDA_NOTIFY_EMAIL', 'asaflocouavila@gmail.com')
 
 # En el plan gratuito de Render, los puertos SMTP (587, 465) están bloqueados por firewall.
 # Por seguridad, solo activar SMTP si se habilita explícitamente con ENABLE_SMTP=True.

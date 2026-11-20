@@ -60,7 +60,7 @@ def _despachar_correo(to_email, subject, text_body, html_body):
         _enviar_via_resend(to_email, subject, text_body, html_body, resend_key)
     else:
         try:
-            remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'asaflocouavli@gmail.com')
+            remitente = getattr(settings, 'DEFAULT_FROM_EMAIL', 'asaflocouavila@gmail.com')
             msg = EmailMultiAlternatives(
                 subject=subject,
                 body=text_body,
@@ -192,7 +192,7 @@ El Pandita Dulcería 🍬
 </html>
 """
 
-        tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
+        tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavila@gmail.com')
 
         # Lanzar en hilo asíncrono
         def _job_pedido():
@@ -286,7 +286,7 @@ El Pandita Dulcería
 </html>
 """
 
-        tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavli@gmail.com')
+        tienda_email = getattr(settings, 'TIENDA_NOTIFY_EMAIL', 'asaflocouavila@gmail.com')
 
         # Lanzar en hilo asíncrono
         def _job_contacto():
