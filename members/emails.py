@@ -47,11 +47,54 @@ def _enviar_via_resend(to_email, subject, text_body, html_body, api_key):
         return False
 
 
+def _enviar_via_brevo(to_email, subject, text_body, html_body, api_key):
+    """Envía correo mediante la API HTTPS de Brevo (permite enviar a cualquier destinatario del mundo sin dominio)."""
+    try:
+        sender_email = os.environ.get('BREVO_SENDER_EMAIL', 'asaflocouavila@gmail.com')
+        sender_name = os.environ.get('BREVO_SENDER_NAME', 'El Pandita Dulceria')
+        destinatarios = [{"email": to_email}] if isinstance(to_email, str) else [{"email": m} for m in to_email]
+
+        payload = json.dumps({
+            "sender": {"name": sender_name, "email": sender_email},
+            "to": destinatarios,
+            "subject": subject,
+            "htmlContent": html_body,
+            "textContent": text_body,
+        }).encode('utf-8')
+
+        req = urllib.request.Request(
+            "https://api.brevo.com/v3/smtp/email",
+            data=payload,
+            headers={
+                "api-key": api_key,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+        )
+        with urllib.request.urlopen(req, timeout=8) as response:
+            logger.info("Correo enviado exitosamente vía Brevo HTTPS a %s (Status: %s)", to_email, response.status)
+            return True
+    except urllib.error.HTTPError as he:
+        detalle = ""
+        try:
+            detalle = he.read().decode('utf-8', errors='replace')
+        except Exception:
+            pass
+        logger.warning("No se pudo enviar via Brevo a %s: HTTP %s - %s", to_email, he.code, detalle or he.reason)
+        return False
+    except Exception as e:
+        logger.warning("No se pudo enviar vía Brevo a %s: %s", to_email, e)
+        return False
+
+
 def _despachar_correo(to_email, subject, text_body, html_body):
     """Despacha el correo según las variables disponibles de forma asíncrona."""
+    brevo_key = os.environ.get('BREVO_API_KEY', '').strip()
     resend_key = os.environ.get('RESEND_API_KEY', '').strip()
 
-    if resend_key:
+    if brevo_key:
+        _enviar_via_brevo(to_email, subject, text_body, html_body, brevo_key)
+    elif resend_key:
         if not resend_key.startswith('re_'):
             logger.warning(
                 "ATENCIÓN: La variable RESEND_API_KEY no parece ser una clave de Resend válida (debe comenzar con 're_'). Valor actual detectado: '%s...'",
