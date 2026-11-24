@@ -31,6 +31,7 @@
         <li><a href="{% url 'servicios' %}">Servicios</a></li>
         <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
         <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        <li><a href="{% url 'rastreo' %}">🔍 Rastrear</a></li>
         <li><a href="{% url 'pagar' %}" class="activo">🛒 Pagar</a></li>
       </ul>
     </nav>
@@ -55,31 +56,151 @@
         <div class="conf-box">
           <div class="conf-icono">🎉</div>
           <div class="conf-titulo">¡Pedido #{{ pedido.pk }} recibido!</div>
-          <p>Hemos guardado tu solicitud. Nos comunicaremos contigo por WhatsApp para confirmar los detalles. ¡Gracias por elegir El Pandita! 🐼</p>
+          <p>Hemos registrado tu solicitud con éxito. {% if pedido.metodo_pago == 'transferencia' %}Estamos validando tu transferencia bancaria SPEI para comenzar a empaquetar tus dulces.{% else %}Nos comunicaremos contigo por WhatsApp para confirmar la entrega.{% endif %} ¡Gracias por elegir El Pandita! 🐼</p>
 
           <div class="conf-detalle">
-            <strong>👤 Cliente:</strong> {{ pedido.nombre }} {{ pedido.apellido }}<br>
-            <strong>📞 Contacto:</strong> {{ pedido.telefono }}<br>
-            {% if pedido.email %}<strong>📧 Email:</strong> {{ pedido.email }}<br>{% endif %}
-            <strong>📦 Entrega:</strong> {{ pedido.entrega }}<br>
-            {% if pedido.direccion %}<strong>🏠 Dirección:</strong> {{ pedido.direccion }}<br>{% endif %}
-            <strong>💳 Pago:</strong> {{ pedido.metodo_pago }}<br>
-            <strong>🍬 Productos:</strong><br>
-            {% for item in pedido.get_items %}
-              &nbsp;&nbsp;• {{ item.nombre }} × {{ item.cantidad }}<br>
-            {% endfor %}
-            <strong>💰 Total: ${{ pedido.total|floatformat:0 }} MXN</strong>
+            <div class="conf-detalle-fila">
+              <span class="conf-etiqueta">Estado actual:</span>
+              <span class="badge-estado-pedido badge-estado-{{ pedido.estado }}">{{ pedido.get_estado_display }}</span>
+            </div>
+            <div class="conf-detalle-fila">
+              <span class="conf-etiqueta">👤 Cliente:</span>
+              <span>{{ pedido.nombre }} {{ pedido.apellido }}</span>
+            </div>
+            <div class="conf-detalle-fila">
+              <span class="conf-etiqueta">📞 Contacto:</span>
+              <span>{{ pedido.telefono }}</span>
+            </div>
+            {% if pedido.email %}
+            <div class="conf-detalle-fila">
+              <span class="conf-etiqueta">📧 Email:</span>
+              <span>{{ pedido.email }}</span>
+            </div>
+            {% endif %}
+            <div class="conf-detalle-fila">
+              <span class="conf-etiqueta">📦 Entrega:</span>
+              <span>{{ pedido.entrega }}</span>
+            </div>
+            {% if pedido.direccion %}
+            <div class="conf-detalle-fila">
+              <span class="conf-etiqueta">🏠 Dirección:</span>
+              <span>{{ pedido.direccion }}</span>
+            </div>
+            {% endif %}
+            <div class="conf-detalle-fila">
+              <span class="conf-etiqueta">💳 Pago:</span>
+              <span>{{ pedido.get_metodo_pago_display }}</span>
+            </div>
+
+            {% if pedido.metodo_pago == 'transferencia' %}
+            <div class="conf-caja-transferencia">
+              <div class="conf-subtitulo-trans">🏦 Comprobante de Transferencia SPEI</div>
+              {% if pedido.banco_origen %}
+              <div class="conf-detalle-fila">
+                <span class="conf-etiqueta">Banco emisor:</span>
+                <strong>{{ pedido.banco_origen }}</strong>
+              </div>
+              {% endif %}
+              {% if pedido.titular_transferencia %}
+              <div class="conf-detalle-fila">
+                <span class="conf-etiqueta">Titular:</span>
+                <span>{{ pedido.titular_transferencia }}</span>
+              </div>
+              {% endif %}
+              {% if pedido.cuenta_digitos %}
+              <div class="conf-detalle-fila">
+                <span class="conf-etiqueta">Dígitos registrados:</span>
+                <span class="mono-code">{{ pedido.cuenta_digitos }}</span>
+              </div>
+              {% endif %}
+              {% if pedido.folio_transferencia %}
+              <div class="conf-detalle-fila">
+                <span class="conf-etiqueta">Folio / Rastreo SPEI:</span>
+                <span class="mono-code">{{ pedido.folio_transferencia }}</span>
+              </div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="conf-productos-lista">
+              <strong>🍬 Dulces solicitados:</strong>
+              <ul class="conf-items-ul">
+                {% for item in pedido.get_items %}
+                <li>
+                  <span>{{ item.nombre }} × {{ item.cantidad }}</span>
+                  <span class="item-precio-linea">${{ item.precio|floatformat:2 }} c/u</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <div class="conf-total-bloque">
+              <span>Total a pagar:</span>
+              <span class="conf-total-monto">${{ pedido.total|floatformat:2 }} MXN</span>
+            </div>
           </div>
 
           {% if pedido.email %}
           <div class="aviso-correo-enviado">
-            📧 Te enviamos un correo de confirmación con el resumen detallado de tu pedido a <strong>{{ pedido.email }}</strong>.
+            📧 Hemos enviado el recibo detallado con confirmación a tu correo: <strong>{{ pedido.email }}</strong>.
           </div>
           {% endif %}
 
+          <!-- Ticket Digital Imprimible (oculto en vista normal, listo para imprimir) -->
+          <div class="recibo-imprimible" id="recibo-imprimible">
+            <div class="recibo-header">
+              <h2 class="recibo-logo">🐼 El Pandita Dulcería</h2>
+              <p class="recibo-sub">Xicoténcatl, Tamaulipas • Tel. 81 3712 2570</p>
+              <p class="recibo-num">TICKET DIGITAL DE VENTA #{{ pedido.pk }}</p>
+              <p class="recibo-fecha">Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}</p>
+            </div>
+            <div class="recibo-divider"></div>
+            <div class="recibo-seccion">
+              <p><strong>Cliente:</strong> {{ pedido.nombre }} {{ pedido.apellido }}</p>
+              <p><strong>Teléfono:</strong> {{ pedido.telefono }}</p>
+              <p><strong>Entrega:</strong> {{ pedido.entrega }}</p>
+              {% if pedido.direccion %}<p><strong>Dirección:</strong> {{ pedido.direccion }}</p>{% endif %}
+              <p><strong>Método de pago:</strong> {{ pedido.get_metodo_pago_display }}</p>
+              {% if pedido.folio_transferencia %}<p><strong>Folio SPEI:</strong> {{ pedido.folio_transferencia }} ({{ pedido.banco_origen }})</p>{% endif %}
+            </div>
+            <div class="recibo-divider"></div>
+            <table class="recibo-tabla">
+              <thead>
+                <tr>
+                  <th>Cant</th>
+                  <th>Producto</th>
+                  <th class="txt-der">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in pedido.get_items %}
+                <tr>
+                  <td>{{ item.cantidad }}</td>
+                  <td>{{ item.nombre }}</td>
+                  <td class="txt-der">${{ item.precio|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div class="recibo-divider"></div>
+            <div class="recibo-totales">
+              <p class="recibo-total-linea"><strong>TOTAL: ${{ pedido.total|floatformat:2 }} MXN</strong></p>
+              <p class="recibo-iva">(Precios en Moneda Nacional)</p>
+            </div>
+            <div class="recibo-footer">
+              <p>¡Gracias por endulzar tu día con El Pandita!</p>
+              <p>🐼 www.dulceria-el-pandita.onrender.com 🐼</p>
+            </div>
+          </div>
 
           <div class="conf-btn-bloque">
-            <a href="https://wa.me/528137122570?text=¡Hola%20El%20Pandita!%20🐼%0APedido%20%23{{ pedido.pk }}%0ACliente%3A%20{{ pedido.nombre }}%0ATotal%3A%20%24{{ pedido.total|floatformat:0 }}%20MXN"
+            <button type="button" class="btn btn-azul" onclick="imprimirRecibo()">
+              🖨️ Imprimir Ticket / Guardar PDF
+            </button>
+            <a href="{% url 'rastreo' %}?id={{ pedido.pk }}" class="btn btn-morado">
+              🔍 Rastrear este Pedido
+            </a>
+            <a href="https://wa.me/528137122570?text=¡Hola%20El%20Pandita!%20🐼%0APedido%20%23{{ pedido.pk }}%0ACliente%3A%20{{ pedido.nombre }}%0ATotal%3A%20%24{{ pedido.total|floatformat:0 }}%20MXN{% if pedido.folio_transferencia %}%0AFolio%20SPEI%3A%20{{ pedido.folio_transferencia }}{% endif %}"
                target="_blank" class="btn btn-verde">
               💬 Confirmar por WhatsApp
             </a>
@@ -291,30 +412,81 @@
 
           <!-- Info Transferencia -->
           <div class="info-transferencia" id="info-transferencia">
-            <h4>📋 Datos para transferencia / depósito</h4>
-            <div class="banco-dato">
-              <span class="label">Banco</span>
-              <span class="valor">BBVA / Bancomer</span>
-            </div>
-            <div class="banco-dato">
-              <span class="label">Titular</span>
-              <span class="valor">Asaf Avila</span>
-            </div>
-            <div class="banco-dato">
-              <span class="label">CLABE interbancaria</span>
-              <div class="banco-dato-valor">
-                <span class="valor" id="clabe-val">012345678901234567</span>
-                <button type="button" class="copiar-btn" onclick="copiar('clabe-val', this)">Copiar</button>
+            <div class="trans-encabezado">
+              <span class="trans-icono-header">🏦</span>
+              <div>
+                <h4 class="trans-titulo">Pago mediante Transferencia Bancaria (SPEI en vivo)</h4>
+                <p class="trans-subtitulo">Realiza tu transferencia desde la app de tu banco y registra aquí tus datos de confirmación.</p>
               </div>
             </div>
-            <div class="banco-dato">
-              <span class="label">Número de tarjeta</span>
-              <div class="banco-dato-valor">
-                <span class="valor" id="tarjeta-val">4152 3131 XXXX XXXX</span>
-                <button type="button" class="copiar-btn" onclick="copiar('tarjeta-val', this)">Copiar</button>
+
+            <!-- Paso A: Cuenta de la tienda -->
+            <div class="trans-bloque-destino">
+              <div class="trans-bloque-titulo">1. Datos de depósito / transferencia oficial:</div>
+              <div class="banco-dato">
+                <span class="label">Banco Receptor</span>
+                <span class="valor">BBVA México</span>
+              </div>
+              <div class="banco-dato">
+                <span class="label">Beneficiario</span>
+                <span class="valor">El Pandita Dulcería (Asaf Ávila)</span>
+              </div>
+              <div class="banco-dato">
+                <span class="label">CLABE Interbancaria (18 dígitos)</span>
+                <div class="banco-dato-valor">
+                  <span class="valor mono-clabe" id="clabe-val">012 345 67890123456 7</span>
+                  <button type="button" class="copiar-btn" onclick="copiar('clabe-val', this)">📋 Copiar CLABE</button>
+                </div>
+              </div>
+              <div class="banco-dato">
+                <span class="label">Tarjeta de débito</span>
+                <div class="banco-dato-valor">
+                  <span class="valor mono-clabe" id="tarjeta-val">4152 3131 8902 4410</span>
+                  <button type="button" class="copiar-btn" onclick="copiar('tarjeta-val', this)">📋 Copiar Tarjeta</button>
+                </div>
+              </div>
+              <div class="banco-dato">
+                <span class="label">Concepto sugerido</span>
+                <span class="valor" id="concepto-sugerido">DULCES PANDITA</span>
               </div>
             </div>
-            <p class="aviso-comprobante">⚠️ Guarda tu comprobante y envíalo por WhatsApp al <strong>81 3712 2570</strong> para confirmar tu pedido.</p>
+
+            <!-- Paso B: Datos del cliente que transfiere -->
+            <div class="trans-bloque-emisor">
+              <div class="trans-bloque-titulo">2. Ingresa los datos de tu transferencia bancaria:</div>
+              <p class="trans-ayuda-texto">Ingresa el banco desde el cual nos transfieres y los dígitos de tu cuenta o comprobante para validar tu pago al instante:</p>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="{{ form.banco_origen.id_for_label }}">🏦 {{ form.banco_origen.label }}</label>
+                  {{ form.banco_origen }}
+                </div>
+                <div class="form-group">
+                  <label for="{{ form.titular_transferencia.id_for_label }}">👤 {{ form.titular_transferencia.label }}</label>
+                  {{ form.titular_transferencia }}
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="{{ form.cuenta_digitos.id_for_label }}">💳 {{ form.cuenta_digitos.label }}</label>
+                  {{ form.cuenta_digitos }}
+                  <span class="campo-pista">Ingresa tu número de cuenta, tarjeta o últimos 4 dígitos.</span>
+                </div>
+                <div class="form-group">
+                  <label for="{{ form.folio_transferencia.id_for_label }}">🔢 {{ form.folio_transferencia.label }}</label>
+                  {{ form.folio_transferencia }}
+                  <span class="campo-pista">Folio numérico de SPEI o clave de rastreo bancaria.</span>
+                </div>
+              </div>
+
+              <div class="trans-validador-box" id="trans-validador-box">
+                <span class="validador-icono">⚡</span>
+                <span class="validador-texto" id="validador-texto">Completa los datos de tu banco para registrar tu comprobante digital.</span>
+              </div>
+            </div>
+
+            <p class="aviso-comprobante">💡 <strong>Nota del comercio:</strong> Al registrar tu pedido, el sistema emitirá tu ticket digital y te notificará por correo el estado de validación SPEI.</p>
           </div>
 
           <!-- Info WhatsApp -->
@@ -562,11 +734,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Copiar CLABE / tarjeta ────────────────────────────────────────────────────
 function copiar(id, btn) {
-  const txt = document.getElementById(id).textContent;
+  const el = document.getElementById(id);
+  if (!el) return;
+  const txt = el.textContent.replace(/\s+/g, '');
   navigator.clipboard.writeText(txt).then(() => {
-    btn.textContent = '¡Copiado!';
-    setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000);
   });
+}
+
+// ── Validación visual de transferencia SPEI ────────────────────────────────────
+function verificarCamposTransferencia() {
+  const banco = document.getElementById('id_banco_origen');
+  const digitos = document.getElementById('id_cuenta_digitos');
+  const folio = document.getElementById('id_folio_transferencia');
+  const box = document.getElementById('trans-validador-box');
+  const txt = document.getElementById('validador-texto');
+  if (!box || !txt) return;
+
+  const bancoVal = banco ? banco.value.trim() : '';
+  const digitosVal = digitos ? digitos.value.trim() : '';
+  const folioVal = folio ? folio.value.trim() : '';
+
+  if (bancoVal && (digitosVal || folioVal)) {
+    box.classList.add('valido');
+    txt.textContent = `✓ Datos SPEI listos para validar desde ${bancoVal}. Se emitirá tu ticket al confirmar.`;
+  } else {
+    box.classList.remove('valido');
+    txt.textContent = 'Selecciona tu banco e ingresa tus dígitos o folio para comprobar tu transferencia.';
+  }
+}
+
+document.addEventListener('input', (e) => {
+  if (['id_cuenta_digitos', 'id_folio_transferencia'].includes(e.target.id)) {
+    verificarCamposTransferencia();
+  }
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'id_banco_origen') {
+    verificarCamposTransferencia();
+  }
+});
+
+// ── Imprimir recibo digital / Ticket ──────────────────────────────────────────
+function imprimirRecibo() {
+  window.print();
 }
 </script>
 </body>

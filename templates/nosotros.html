@@ -14,7 +14,7 @@
   <div class="header-inner">
     <a href="{% url 'inicio' %}" class="logo">
       <div class="logo-img-wrap">
-        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" class="logo-img-circulo">
       </div>
       <div>
         <span class="logo-nombre">El Pandita</span>
@@ -31,7 +31,8 @@
         <li><a href="{% url 'servicios' %}">Servicios</a></li>
         <li><a href="{% url 'nosotros' %}" class="activo">Nosotros</a></li>
         <li><a href="{% url 'contacto' %}">Contacto</a></li>
-        <li><a href="{% url 'pagar' %}">Pagar</a></li>
+        <li><a href="{% url 'rastreo' %}">🔍 Rastrear</a></li>
+        <li><a href="{% url 'pagar' %}">🛒 Pagar</a></li>
       </ul>
     </nav>
   </div>
@@ -47,20 +48,20 @@
   <div class="contenedor">
     <div class="historia-grid">
       <div class="historia-img-wrap">
-        <img src="{% static 'img/Tienda.jpeg' %}" alt="Tienda El Pandita" style="width:100%;height:420px;object-fit:cover;">
+        <img src="{% static 'img/Tienda.jpeg' %}" alt="Tienda El Pandita" class="historia-img-tienda">
       </div>
       <div class="historia-texto">
         <h2>Nuestra <span>historia</span></h2>
         <p>El Pandita nació de un sueño sencillo pero poderoso: crear un lugar donde la alegría y el sabor se encontraran en cada rincón. Lo que comenzó como un pequeño puesto de dulces en el mercado local, hoy es una dulcería querida por toda la comunidad.</p>
         <p>Desde el primer día, nuestra prioridad ha sido ofrecer productos de calidad, con precios accesibles y la mejor atención al cliente. Cada dulce que vendemos está elegido con cariño.</p>
         <p>Creemos que los dulces no son solo un alimento: son recuerdos, son sonrisas, son celebraciones. Y eso es exactamente lo que queremos darte cada vez que visites El Pandita.</p>
-        <a href="{% url 'contacto' %}" class="btn btn-rojo" style="margin-top:.75rem;">Visítanos hoy 📍</a>
+        <a href="{% url 'contacto' %}" class="btn btn-rojo btn-visitanos">Visítanos hoy 📍</a>
       </div>
     </div>
   </div>
 </section>
 
-<section class="seccion" style="background:#fff1e6; padding-top:0;">
+<section class="seccion seccion-favoritos">
   <div class="contenedor">
     <h2 class="titulo-seccion">Nuestra <span>esencia</span></h2>
     <div class="separador"><span class="separador-icono">🌟</span></div>
@@ -86,12 +87,12 @@
 
 <section class="seccion">
   <div class="contenedor">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:start;">
+    <div class="nosotros-dos-columnas">
 
       <div>
-        <h2 class="titulo-seccion" style="text-align:left; margin-bottom:.5rem;">Nuestra <span>trayectoria</span></h2>
-        <div class="separador" style="justify-content:flex-start; margin-left:0;"><span class="separador-icono">📅</span></div>
-        <p style="color:var(--gris); margin-bottom:2rem;">Un recorrido lleno de sabor, aprendizaje y mucho cariño.</p>
+        <h2 class="titulo-seccion titulo-seccion-izq">Nuestra <span>trayectoria</span></h2>
+        <div class="separador separador-izq"><span class="separador-icono">📅</span></div>
+        <p class="subtexto-nosotros">Un recorrido lleno de sabor, aprendizaje y mucho cariño.</p>
         <div class="timeline">
           <div class="tl-item">
             <div class="tl-anio">2019</div>
@@ -122,13 +123,13 @@
       </div>
 
       <div>
-        <h2 class="titulo-seccion" style="text-align:left; margin-bottom:.5rem;">Nuestro <span>equipo</span></h2>
-        <div class="separador" style="justify-content:flex-start; margin-left:0;"><span class="separador-icono">👥</span></div>
-        <p style="color:var(--gris); margin-bottom:2rem;">Las personas detrás de cada sonrisa y cada dulce.</p>
-        <div class="equipo-grid" style="grid-template-columns:1fr 1fr;">
+        <h2 class="titulo-seccion titulo-seccion-izq">Nuestro <span>equipo</span></h2>
+        <div class="separador separador-izq"><span class="separador-icono">👥</span></div>
+        <p class="subtexto-nosotros">Las personas detrás de cada sonrisa y cada dulce.</p>
+        <div class="equipo-grid">
           <div class="miembro-card">
             <div class="miembro-foto">
-              <img src="{% static 'img/Dueño.jpeg' %}" alt="Fundador El Pandita" style="width:100%;height:180px;object-fit:cover;border-radius:var(--radio) var(--radio) 0 0;">
+              <img src="{% static 'img/Dueño.jpeg' %}" alt="Fundador El Pandita" class="foto-miembro-img">
             </div>
             <div class="miembro-info">
               <div class="miembro-nombre">Asaf Avila</div>
@@ -138,7 +139,7 @@
           </div>
           <div class="miembro-card">
             <div class="miembro-foto">
-              <img src="{% static 'img/logo-pandita.png' %}" alt="Colaborador El Pandita" style="width:100%;height:180px;object-fit:contain;background:#fff8f8;border-radius:var(--radio) var(--radio) 0 0;">
+              <img src="{% static 'img/logo-pandita.png' %}" alt="Colaborador El Pandita" class="foto-miembro-logo">
             </div>
             <div class="miembro-info">
               <div class="miembro-nombre">Joel Avila</div>

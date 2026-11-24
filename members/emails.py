@@ -140,6 +140,35 @@ def enviar_correo_pedido(pedido):
         nombre_completo = f"{pedido.nombre} {pedido.apellido}".strip()
         direccion_info = f"\nDirección de entrega: {pedido.direccion}" if pedido.direccion else ""
 
+        transfer_texto = ""
+        transfer_html = ""
+        if pedido.metodo_pago == 'transferencia':
+            transfer_texto = f"""
+DATOS DE LA TRANSFERENCIA:
+- Banco emisor: {pedido.banco_origen or 'No especificado'}
+- Titular emisor: {pedido.titular_transferencia or nombre_completo}
+- Cuenta / Dígitos: {pedido.cuenta_digitos or 'No especificado'}
+- Folio / Rastreo SPEI: {pedido.folio_transferencia or 'En proceso de verificación'}
+
+DATOS DE LA TIENDA PARA SPEI:
+- Banco receptor: BBVA México
+- Beneficiario: El Pandita Dulcería (Asaf Ávila)
+- CLABE interbancaria: 012 345 67890123456 7
+- Concepto / Referencia: PEDIDO-{pedido.pk}
+"""
+            transfer_html = f"""
+      <div style="background:#f0f7ff;border:1px solid #cce3fd;border-radius:12px;padding:15px;margin:15px 0;">
+        <h4 style="margin:0 0 10px;color:#0366d6;">🏦 Datos de Transferencia Registrados</h4>
+        <p style="margin:4px 0;font-size:13px;"><strong>Banco emisor:</strong> {pedido.banco_origen or 'No especificado'}</p>
+        <p style="margin:4px 0;font-size:13px;"><strong>Titular:</strong> {pedido.titular_transferencia or nombre_completo}</p>
+        <p style="margin:4px 0;font-size:13px;"><strong>Cuenta / Dígitos:</strong> {pedido.cuenta_digitos or 'No especificado'}</p>
+        <p style="margin:4px 0;font-size:13px;"><strong>Folio SPEI:</strong> <span style="background:#fff;padding:2px 6px;border-radius:4px;font-family:monospace;font-weight:bold;">{pedido.folio_transferencia or 'En validación'}</span></p>
+        <hr style="border:none;border-top:1px dashed #bcdcff;margin:10px 0;">
+        <p style="margin:4px 0;font-size:12px;color:#555;"><strong>CLABE oficial El Pandita (BBVA):</strong> <strong style="color:#000;">012 345 67890123456 7</strong></p>
+        <p style="margin:4px 0;font-size:12px;color:#555;"><strong>Concepto:</strong> PEDIDO-{pedido.pk}</p>
+      </div>
+"""
+
         asunto = f"🐼 ¡Confirmación de Pedido #{pedido.pk}! - El Pandita Dulcería"
         mensaje_texto = f"""¡Hola {nombre_completo}!
 
@@ -150,9 +179,11 @@ RESUMEN DE TU PEDIDO:
 {items_texto}
 
 TOTAL: ${pedido.total:.2f} MXN
+ESTADO: {pedido.get_estado_display()}
 MÉTODO DE ENTREGA: {pedido.entrega}{direccion_info}
-MÉTODO DE PAGO: {pedido.metodo_pago.capitalize()}
+MÉTODO DE PAGO: {pedido.get_metodo_pago_display()}
 TELÉFONO DE CONTACTO: {pedido.telefono}
+{transfer_texto}
 NOTAS: {pedido.notas or 'Ninguna'}
 
 Nos comunicaremos contigo a la brevedad por WhatsApp o llamada para coordinar la entrega.
@@ -214,10 +245,13 @@ El Pandita Dulcería 🍬
       <div class="info-card">
         <strong>📦 Modalidad de entrega:</strong> {pedido.entrega}<br>
         {f'<strong>📍 Dirección:</strong> {pedido.direccion}<br>' if pedido.direccion else ''}
-        <strong>💳 Método de pago:</strong> {pedido.metodo_pago.capitalize()}<br>
+        <strong>💳 Método de pago:</strong> {pedido.get_metodo_pago_display()}<br>
+        <strong>📌 Estado:</strong> {pedido.get_estado_display()}<br>
         <strong>📞 Teléfono:</strong> {pedido.telefono}<br>
         {f'<strong>📝 Notas:</strong> {pedido.notas}<br>' if pedido.notas else ''}
       </div>
+
+      {transfer_html}
 
       <p style="text-align:center;">¿Tienes alguna duda o quieres confirmar detalles?</p>
       <div style="text-align:center;">

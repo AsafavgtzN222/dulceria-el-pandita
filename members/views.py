@@ -60,6 +60,37 @@ def contacto(request):
 
 
 
+# ─── Rastreo de Pedidos en Vivo ───────────────────────────────────────────────
+
+def rastreo(request):
+    """Permite al cliente o al profesor consultar el estatus en vivo de un pedido."""
+    pedido = None
+    buscado = False
+    error = None
+    query = request.GET.get('id', '').strip()
+
+    if query:
+        buscado = True
+        id_limpio = query.replace('#', '').replace('PANDITA-', '').replace('pedido-', '').replace('PEDIDO-', '').strip()
+        if id_limpio.isdigit():
+            pedido = Pedido.objects.filter(pk=int(id_limpio)).first()
+        if not pedido:
+            pedido = Pedido.objects.filter(telefono__icontains=query).order_by('-fecha').first()
+        if not pedido:
+            pedido = Pedido.objects.filter(email__iexact=query).order_by('-fecha').first()
+        if not pedido:
+            pedido = Pedido.objects.filter(folio_transferencia__iexact=query).order_by('-fecha').first()
+        if not pedido:
+            error = f"No se encontró ningún pedido asociado a '{query}'."
+
+    return render(request, 'rastreo.html', {
+        'pedido': pedido,
+        'buscado': buscado,
+        'error': error,
+        'query': query,
+    })
+
+
 # ─── Productos ────────────────────────────────────────────────────────────────
 
 def productos(request):
@@ -228,6 +259,9 @@ def pagar(request):
                     except Producto.DoesNotExist:
                         pass
 
+                metodo = cd['metodo_pago']
+                estado_inicial = 'verificando_pago' if metodo == 'transferencia' else 'recibido'
+
                 pedido = Pedido.objects.create(
                     nombre=cd['nombre'],
                     apellido=cd.get('apellido', ''),
@@ -235,7 +269,12 @@ def pagar(request):
                     email=cd.get('email', ''),
                     entrega=cd['entrega'],
                     direccion=cd.get('direccion', ''),
-                    metodo_pago=cd['metodo_pago'],
+                    metodo_pago=metodo,
+                    banco_origen=cd.get('banco_origen', ''),
+                    titular_transferencia=cd.get('titular_transferencia', ''),
+                    cuenta_digitos=cd.get('cuenta_digitos', ''),
+                    folio_transferencia=cd.get('folio_transferencia', ''),
+                    estado=estado_inicial,
                     notas=cd.get('notas', ''),
                     items_json=json.dumps(carrito, ensure_ascii=False),
                     total=subtotal,

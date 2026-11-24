@@ -9,9 +9,11 @@ class ProductoAdmin(admin.ModelAdmin):
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'telefono', 'email', 'total', 'metodo_pago', 'entrega', 'fecha')
-    list_filter = ('metodo_pago', 'entrega', 'fecha')
-    search_fields = ('nombre', 'telefono', 'email')
+    list_display = ('id', 'nombre', 'telefono', 'total', 'metodo_pago', 'banco_origen', 'estado', 'fecha')
+    list_filter = ('estado', 'metodo_pago', 'banco_origen', 'entrega', 'fecha')
+    list_editable = ('estado',)
+    search_fields = ('id', 'nombre', 'apellido', 'telefono', 'email', 'folio_transferencia')
+    readonly_fields = ('fecha',)
 
 @admin.register(MensajeContacto)
 class MensajeContactoAdmin(admin.ModelAdmin):

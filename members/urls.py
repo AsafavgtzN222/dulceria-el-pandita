@@ -8,6 +8,7 @@ urlpatterns = [
     path('servicios/', views.servicios, name='servicios'),
     path('nosotros/', views.nosotros, name='nosotros'),
     path('contacto/', views.contacto, name='contacto'),
+    path('rastreo/', views.rastreo, name='rastreo'),
     path('pagar/', views.pagar, name='pagar'),
 
     # Carrito (AJAX)

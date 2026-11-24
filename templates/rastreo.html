@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rastrea tu pedido en El Pandita Dulcería en tiempo real con tu número de orden." />
+  <title>Rastreo de Pedidos | El Pandita Dulcería</title>
+  <link rel="stylesheet" href="{% static 'css/Styles.css' %}" />
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="{% url 'inicio' %}" class="logo">
+      <div class="logo-img-wrap">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita">
+      </div>
+      <div>
+        <span class="logo-nombre">El Pandita</span>
+        <span class="logo-subtitulo">Dulcería</span>
+      </div>
+    </a>
+    <button class="hamburger" aria-label="Menú" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="nav-principal">
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        <li><a href="{% url 'rastreo' %}" class="activo">🔍 Rastrear</a></li>
+        <li><a href="{% url 'pagar' %}">🛒 Pagar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="hero-interno hero-rastreo">
+  <p class="breadcrumb"><a href="{% url 'inicio' %}">Inicio</a> › Rastreo</p>
+  <h1>Rastreo de Pedidos en Vivo 📦</h1>
+  <p>Consulta en tiempo real el estatus de tu pedido, validación de transferencia bancaria y entrega.</p>
+</section>
+
+<section class="seccion">
+  <div class="contenedor-rastreo">
+
+    <!-- Buscador de pedido -->
+    <div class="caja-buscador-rastreo">
+      <h2 class="titulo-caja-rastreo">Ingresa los datos de tu compra</h2>
+      <p class="subtitulo-caja-rastreo">Puedes buscar por tu número de pedido (ej. <strong>#3</strong>), tu número de teléfono o tu correo registrado.</p>
+
+      <form method="get" action="{% url 'rastreo' %}" class="form-busqueda-rastreo">
+        <div class="input-grupo-rastreo">
+          <input type="text" name="id" value="{{ query }}" placeholder="Ejemplo: #3 o 81 3712 2570 o tu@correo.com" required class="input-rastreo" />
+          <button type="submit" class="btn btn-rojo btn-buscar-rastreo">
+            🔍 Consultar Estatus
+          </button>
+        </div>
+      </form>
+    </div>
+
+    {% if buscado %}
+      {% if pedido %}
+      <!-- Resultado del Pedido -->
+      <div class="resultado-rastreo-card">
+        <div class="rastreo-header-card">
+          <div class="rastreo-id-bloque">
+            <span class="badge-pedido-num">PEDIDO #{{ pedido.pk }}</span>
+            <span class="rastreo-fecha">{{ pedido.fecha|date:"d \d\e F, Y - H:i" }} hrs</span>
+          </div>
+          <div class="rastreo-estado-badge badge-estado-{{ pedido.estado }}">
+            {{ pedido.get_estado_display }}
+          </div>
+        </div>
+
+        <!-- Línea de tiempo de progreso -->
+        <div class="timeline-rastreo">
+          <div class="timeline-paso {% if pedido.estado in 'recibido,verificando_pago,en_preparacion,en_camino,entregado' %}activo{% endif %}">
+            <div class="timeline-nodo">1</div>
+            <div class="timeline-info">
+              <span class="timeline-titulo">Recibido</span>
+              <span class="timeline-desc">Orden registrada</span>
+            </div>
+          </div>
+
+          <div class="timeline-paso {% if pedido.estado in 'verificando_pago,en_preparacion,en_camino,entregado' %}activo{% endif %}">
+            <div class="timeline-nodo">2</div>
+            <div class="timeline-info">
+              <span class="timeline-titulo">Validación</span>
+              <span class="timeline-desc">{% if pedido.metodo_pago == 'transferencia' %}Revisando SPEI{% else %}Pago coordinado{% endif %}</span>
+            </div>
+          </div>
+
+          <div class="timeline-paso {% if pedido.estado in 'en_preparacion,en_camino,entregado' %}activo{% endif %}">
+            <div class="timeline-nodo">3</div>
+            <div class="timeline-info">
+              <span class="timeline-titulo">En Preparación</span>
+              <span class="timeline-desc">Empaquetando dulces</span>
+            </div>
+          </div>
+
+          <div class="timeline-paso {% if pedido.estado in 'en_camino,entregado' %}activo{% endif %}">
+            <div class="timeline-nodo">4</div>
+            <div class="timeline-info">
+              <span class="timeline-titulo">Listo / Ruta</span>
+              <span class="timeline-desc">{{ pedido.entrega }}</span>
+            </div>
+          </div>
+
+          <div class="timeline-paso {% if pedido.estado == 'entregado' %}activo{% endif %}">
+            <div class="timeline-nodo">5</div>
+            <div class="timeline-info">
+              <span class="timeline-titulo">Entregado</span>
+              <span class="timeline-desc">¡A disfrutar! 🍬</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detalles informativos en dos columnas -->
+        <div class="rastreo-grid-detalles">
+          <div class="rastreo-col-info">
+            <h4 class="rastreo-subseccion-titulo">📋 Datos del Cliente y Entrega</h4>
+            <div class="rastreo-item-dato">
+              <span class="label">Cliente:</span>
+              <span class="valor">{{ pedido.nombre }} {{ pedido.apellido }}</span>
+            </div>
+            <div class="rastreo-item-dato">
+              <span class="label">Teléfono:</span>
+              <span class="valor">{{ pedido.telefono }}</span>
+            </div>
+            {% if pedido.email %}
+            <div class="rastreo-item-dato">
+              <span class="label">Correo:</span>
+              <span class="valor">{{ pedido.email }}</span>
+            </div>
+            {% endif %}
+            <div class="rastreo-item-dato">
+              <span class="label">Modalidad:</span>
+              <span class="valor">{{ pedido.entrega }}</span>
+            </div>
+            {% if pedido.direccion %}
+            <div class="rastreo-item-dato">
+              <span class="label">Dirección:</span>
+              <span class="valor">{{ pedido.direccion }}</span>
+            </div>
+            {% endif %}
+            {% if pedido.notas %}
+            <div class="rastreo-item-dato">
+              <span class="label">Notas:</span>
+              <span class="valor">{{ pedido.notas }}</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="rastreo-col-info">
+            <h4 class="rastreo-subseccion-titulo">💳 Pago y Transferencia SPEI</h4>
+            <div class="rastreo-item-dato">
+              <span class="label">Método:</span>
+              <span class="valor">{{ pedido.get_metodo_pago_display }}</span>
+            </div>
+
+            {% if pedido.metodo_pago == 'transferencia' %}
+            <div class="rastreo-caja-banco">
+              <div class="rastreo-item-dato">
+                <span class="label">Banco emisor:</span>
+                <span class="valor"><strong>{{ pedido.banco_origen|default:"Registrado en línea" }}</strong></span>
+              </div>
+              {% if pedido.titular_transferencia %}
+              <div class="rastreo-item-dato">
+                <span class="label">Titular:</span>
+                <span class="valor">{{ pedido.titular_transferencia }}</span>
+              </div>
+              {% endif %}
+              {% if pedido.cuenta_digitos %}
+              <div class="rastreo-item-dato">
+                <span class="label">Dígitos de cuenta:</span>
+                <span class="valor mono-code">{{ pedido.cuenta_digitos }}</span>
+              </div>
+              {% endif %}
+              {% if pedido.folio_transferencia %}
+              <div class="rastreo-item-dato">
+                <span class="label">Folio SPEI:</span>
+                <span class="valor mono-code">{{ pedido.folio_transferencia }}</span>
+              </div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+            <h4 class="rastreo-subseccion-titulo rastreo-subseccion-espacio">🍬 Dulces Ordenados</h4>
+            <ul class="rastreo-lista-items">
+              {% for item in pedido.get_items %}
+              <li>
+                <span>{{ item.nombre }} × {{ item.cantidad }}</span>
+                <span class="item-precio-linea">${{ item.precio|floatformat:2 }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+
+            <div class="rastreo-total-bloque">
+              <span>Total pagado:</span>
+              <span class="rastreo-monto">${{ pedido.total|floatformat:2 }} MXN</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rastreo-acciones-bloque">
+          <a href="https://wa.me/528137122570?text=Hola%20El%20Pandita,%20quiero%20consultar%20mi%20pedido%20%23{{ pedido.pk }}"
+             target="_blank" class="btn btn-verde">
+            💬 Preguntar por WhatsApp (81 3712 2570)
+          </a>
+          <a href="{% url 'productos' %}" class="btn btn-outline">
+            🍬 Ver más dulces
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <!-- No encontrado -->
+      <div class="rastreo-no-encontrado">
+        <div class="no-icono">🔍</div>
+        <h3>No encontramos tu pedido</h3>
+        <p>{{ error }}</p>
+        <p class="ayuda-no-encontrado">Verifica que el número de pedido esté bien escrito o búscalo con el número de teléfono que registraste al hacer la compra.</p>
+        <div class="acciones-no-encontrado">
+          <a href="{% url 'contacto' %}" class="btn btn-rojo">Contactar a Soporte</a>
+          <a href="{% url 'productos' %}" class="btn btn-outline">Ir al Catálogo</a>
+        </div>
+      </div>
+      {% endif %}
+    {% endif %}
+
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo">El Pandita</div>
+      <p>Tu dulcería de confianza con los sabores más ricos y coloridos.</p>
+      <div class="footer-social">
+        <a href="#">📘</a><a href="#">📸</a><a href="#">💬</a><a href="#">🎵</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Páginas</h4>
+      <ul>
+        <li><a href="{% url 'inicio' %}">Inicio</a></li>
+        <li><a href="{% url 'productos' %}">Productos</a></li>
+        <li><a href="{% url 'servicios' %}">Servicios</a></li>
+        <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+        <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        <li><a href="{% url 'rastreo' %}">Rastrear Pedido</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <p>📍 Col. San Juan, Xicoténcatl, Tamps.</p>
+      <p>📞 81 3712 2570</p>
+      <p>📧 asaflocouavila@gmail.com</p>
+      <p>🕐 Lun–Sáb: 9am – 8pm</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2025 El Pandita Dulcería — Todos los derechos reservados 🐼
+  </div>
+</footer>
+
+<script src="{% static 'js/Main.js' %}"></script>
+</body>
+</html>

@@ -14,7 +14,7 @@
   <div class="header-inner">
     <a href="{% url 'inicio' %}" class="logo">
       <div class="logo-img-wrap">
-        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+        <img src="{% static 'img/logo-pandita.png' %}" alt="Logo El Pandita" class="logo-img-circulo">
       </div>
       <div>
         <span class="logo-nombre">El Pandita</span>
@@ -31,7 +31,8 @@
         <li><a href="{% url 'servicios' %}" class="activo">Servicios</a></li>
         <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
         <li><a href="{% url 'contacto' %}">Contacto</a></li>
-        <li><a href="{% url 'pagar' %}">Pagar</a></li>
+        <li><a href="{% url 'rastreo' %}">🔍 Rastrear</a></li>
+        <li><a href="{% url 'pagar' %}">🛒 Pagar</a></li>
       </ul>
     </nav>
   </div>
@@ -52,7 +53,7 @@
 
     <div class="servicio-card">
       <div class="servicio-img">
-        <img src="{% static 'img/Mesa-dulces.jpeg' %}" alt="Mesa de Dulces" style="width:100%;height:100%;min-height:300px;object-fit:cover;">
+        <img src="{% static 'img/Mesa-dulces.jpeg' %}" alt="Mesa de Dulces" class="servicio-img-cover">
       </div>
       <div class="servicio-contenido">
         <div class="servicio-icono">🍭</div>
@@ -70,7 +71,7 @@
 
     <div class="servicio-card invertir">
       <div class="servicio-img">
-        <img src="{% static 'img/Piñata.jpeg' %}" alt="Piñatas y Rellenos" style="width:100%;height:100%;min-height:300px;object-fit:cover;">
+        <img src="{% static 'img/Piñata.jpeg' %}" alt="Piñatas y Rellenos" class="servicio-img-cover">
       </div>
       <div class="servicio-contenido">
         <div class="servicio-icono">🎊</div>
@@ -88,7 +89,7 @@
 
     <div class="servicio-card">
       <div class="servicio-img">
-        <img src="{% static 'img/Bolsas-recuerdo.jpeg' %}" alt="Bolsas y Recuerdos" style="width:100%;height:100%;min-height:300px;object-fit:cover;">
+        <img src="{% static 'img/Bolsas-recuerdo.jpeg' %}" alt="Bolsas y Recuerdos" class="servicio-img-cover">
       </div>
       <div class="servicio-contenido">
         <div class="servicio-icono">🎁</div>
@@ -106,7 +107,7 @@
 
     <div class="servicio-card invertir">
       <div class="servicio-img">
-        <img src="{% static 'img/Mayoreo.jpeg' %}" alt="Venta por Mayoreo" style="width:100%;height:100%;min-height:300px;object-fit:cover;">
+        <img src="{% static 'img/Mayoreo.jpeg' %}" alt="Venta por Mayoreo" class="servicio-img-cover">
       </div>
       <div class="servicio-contenido">
         <div class="servicio-icono">🏢</div>
@@ -125,7 +126,7 @@
   </div>
 </section>
 
-<section class="seccion" style="background:#fff1e6; padding-top:0;">
+<section class="seccion seccion-favoritos">
   <div class="contenedor">
     <h2 class="titulo-seccion">¿Cómo <span>funciona?</span></h2>
     <div class="separador"><span class="separador-icono">📋</span></div>

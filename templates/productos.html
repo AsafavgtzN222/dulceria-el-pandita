@@ -31,6 +31,7 @@
         <li><a href="{% url 'servicios' %}">Servicios</a></li>
         <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
         <li><a href="{% url 'contacto' %}">Contacto</a></li>
+        <li><a href="{% url 'rastreo' %}">🔍 Rastrear</a></li>
         <li>
           <a href="{% url 'pagar' %}">
             🛒 Carrito
@@ -48,9 +49,32 @@
   <p>Explora nuestro catálogo: paletas, chocolates, gomitas, enchilados y mucho más.</p>
 </section>
 
-<div class="grid-tarjetas">
+<!-- Barra interactiva de Búsqueda y Filtros en tiempo real -->
+<section class="barra-filtros-catalogo">
+  <div class="contenedor-catalogo-filtros">
+    <div class="input-buscador-wrap">
+      <span class="icono-lupa">🔍</span>
+      <input type="text" id="buscador-dulces" class="input-buscar-dulces" placeholder="Buscar dulce por nombre o ingrediente (ej. chocolate, gomitas, paleta)..." oninput="filtrarCatalogoEnVivo()" />
+      <button type="button" id="btn-limpiar-busqueda" class="btn-limpiar-busqueda oculto" onclick="limpiarBusqueda()">✕</button>
+    </div>
+    <div class="botones-cat-wrap" id="botones-categoria">
+      <button type="button" class="btn-cat-filtro activo" data-cat="todos" onclick="seleccionarCategoria('todos', this)">🍭 Todos</button>
+      <button type="button" class="btn-cat-filtro" data-cat="paletas" onclick="seleccionarCategoria('paletas', this)">🍭 Paletas</button>
+      <button type="button" class="btn-cat-filtro" data-cat="chocolates" onclick="seleccionarCategoria('chocolates', this)">🍫 Chocolates</button>
+      <button type="button" class="btn-cat-filtro" data-cat="gomitas" onclick="seleccionarCategoria('gomitas', this)">🍬 Gomitas</button>
+      <button type="button" class="btn-cat-filtro" data-cat="enchilados" onclick="seleccionarCategoria('enchilados', this)">🌶️ Enchilados</button>
+      <button type="button" class="btn-cat-filtro" data-cat="paquetes" onclick="seleccionarCategoria('paquetes', this)">🎁 Paquetes</button>
+    </div>
+    <div id="conteo-dulces-visibles" class="conteo-dulces-visibles">Mostrando todos los dulces</div>
+  </div>
+</section>
+
+<div class="grid-tarjetas" id="contenedor-tarjetas">
   {% for p in productos %}
-  <div class="tarjeta {% if p.stock <= 0 %}agotada{% endif %}" data-categoria="{{ p.categoria }}">
+  <div class="tarjeta {% if p.stock <= 0 %}agotada{% endif %}"
+       data-nombre="{{ p.nombre|lower }}"
+       data-desc="{{ p.descripcion|lower }}"
+       data-categoria="{{ p.categoria|lower }}">
 
     {% if p.imagen %}
       <img class="tarjeta-img" src="{% static 'img/' %}{{ p.imagen }}" alt="{{ p.nombre }}">
@@ -240,6 +264,60 @@
       if (badge) badge.textContent = total;
     })
     .catch(err => console.warn('No se pudo cargar carrito:', err));
+
+  // ── Búsqueda y Filtro de Categoría en Vivo ──────────────────────────────────
+  let categoriaActual = 'todos';
+
+  function seleccionarCategoria(cat, btn) {
+    categoriaActual = cat.toLowerCase();
+    document.querySelectorAll('.btn-cat-filtro').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    filtrarCatalogoEnVivo();
+  }
+
+  function filtrarCatalogoEnVivo() {
+    const input = document.getElementById('buscador-dulces');
+    const query = input ? input.value.trim().toLowerCase() : '';
+    const btnLimpiar = document.getElementById('btn-limpiar-busqueda');
+    const conteo = document.getElementById('conteo-dulces-visibles');
+    const tarjetas = document.querySelectorAll('#contenedor-tarjetas .tarjeta');
+
+    if (btnLimpiar) {
+      if (query.length > 0) btnLimpiar.classList.remove('oculto');
+      else btnLimpiar.classList.add('oculto');
+    }
+
+    let visibles = 0;
+    tarjetas.forEach(t => {
+      const nombre = t.dataset.nombre || '';
+      const desc = t.dataset.desc || '';
+      const cat = t.dataset.categoria || '';
+
+      const coincideTexto = !query || nombre.includes(query) || desc.includes(query) || cat.includes(query);
+      const coincideCat = (categoriaActual === 'todos') || cat.includes(categoriaActual);
+
+      if (coincideTexto && coincideCat) {
+        t.classList.remove('oculto');
+        visibles++;
+      } else {
+        t.classList.add('oculto');
+      }
+    });
+
+    if (conteo) {
+      if (visibles === tarjetas.length) {
+        conteo.textContent = `Mostrando todos los ${visibles} dulces`;
+      } else {
+        conteo.textContent = `Mostrando ${visibles} de ${tarjetas.length} dulces encontrados`;
+      }
+    }
+  }
+
+  function limpiarBusqueda() {
+    const input = document.getElementById('buscador-dulces');
+    if (input) input.value = '';
+    filtrarCatalogoEnVivo();
+  }
 </script>
 </body>
 </html>
