@@ -2265,5 +2265,105 @@ footer { background: var(--oscuro); color: rgba(255,255,255,0.75); padding: 3rem
   object-fit: cover;
 }
 
+/* ==========================================================================
+   SEGURIDAD Y PRIVACIDAD EN RASTREO + BANNER DE ÚLTIMO PEDIDO
+   ========================================================================== */
+.rastreo-seguridad-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.icono-escudo {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+.form-busqueda-rastreo-seguro {
+  width: 100%;
+}
+.rastreo-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+.campo-rastreo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.label-rastreo {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #334155;
+}
+.input-rastreo-campo {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  font-family: var(--cuerpo);
+  font-size: 0.95rem;
+  outline: none;
+  transition: var(--trans);
+  background: #ffffff;
+}
+.input-rastreo-campo:focus {
+  border-color: var(--rojo);
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+}
+.rastreo-btn-submit-wrap {
+  text-align: center;
+}
+.error-texto-destacado {
+  color: #b91c1c;
+  font-weight: 700;
+  font-size: 1rem;
+  background: #fef2f2;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  margin: 0.75rem 0;
+}
+
+/* BANNER RECORDATORIO EN CHECKOUT */
+.banner-ultimo-pedido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  background: #eff6ff;
+  border: 2px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--sombra1);
+  flex-wrap: wrap;
+}
+.icono-bolsa {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+.texto-ultimo-pedido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.92rem;
+  color: #1e3a8a;
+}
+.btn-sm {
+  padding: 0.55rem 1.2rem !important;
+  font-size: 0.88rem !important;
+  white-space: nowrap;
+}
+
+
 
 

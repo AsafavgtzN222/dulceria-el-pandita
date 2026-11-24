@@ -237,6 +237,19 @@
          PASO 1 — Carrito + mini-catálogo
     ════════════════════════════════════════════════ -->
     <div id="paso1" {% if mostrar_paso2 %}class="oculto"{% endif %}>
+      {% if ultimo_pedido %}
+      <div class="banner-ultimo-pedido">
+        <span class="icono-bolsa">🛍️</span>
+        <div class="texto-ultimo-pedido">
+          <strong>¿Olvidaste imprimir tu ticket de compra?</strong>
+          <span>Tienes una orden reciente: <strong>Pedido #{{ ultimo_pedido.pk }}</strong> por ${{ ultimo_pedido.total|floatformat:2 }} MXN.</span>
+        </div>
+        <a href="{% url 'rastreo' %}?id={{ ultimo_pedido.pk }}" class="btn btn-azul btn-sm">
+          🖨️ Ver Ticket y Estatus
+        </a>
+      </div>
+      {% endif %}
+
       <div class="pago-grid">
 
         <!-- Mini-catálogo desde la BD -->

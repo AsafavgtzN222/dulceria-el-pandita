@@ -47,16 +47,37 @@
 <section class="seccion">
   <div class="contenedor-rastreo">
 
-    <!-- Buscador de pedido -->
+    <!-- Buscador seguro de pedido con autenticación de titularidad -->
     <div class="caja-buscador-rastreo">
-      <h2 class="titulo-caja-rastreo">Ingresa los datos de tu compra</h2>
-      <p class="subtitulo-caja-rastreo">Puedes buscar por tu número de pedido (ej. <strong>#3</strong>), tu número de teléfono o tu correo registrado.</p>
+      <div class="rastreo-seguridad-banner">
+        <span class="icono-escudo">🛡️</span>
+        <div>
+          <h2 class="titulo-caja-rastreo">Consulta Segura de tu Pedido</h2>
+          <p class="subtitulo-caja-rastreo">Por privacidad y protección de datos, para consultar un pedido o reimprimir tu ticket digital, ingresa tu número de orden y valida con tu nombre y teléfono o correo registrado.</p>
+        </div>
+      </div>
 
-      <form method="get" action="{% url 'rastreo' %}" class="form-busqueda-rastreo">
-        <div class="input-grupo-rastreo">
-          <input type="text" name="id" value="{{ query }}" placeholder="Ejemplo: #3 o 81 3712 2570 o tu@correo.com" required class="input-rastreo" />
+      <form method="get" action="{% url 'rastreo' %}" class="form-busqueda-rastreo-seguro">
+        <div class="rastreo-inputs-grid">
+          <div class="campo-rastreo-grupo">
+            <label for="campo-id" class="label-rastreo">🔢 Número de Pedido *</label>
+            <input type="text" id="campo-id" name="id" value="{{ query_id|default:'' }}" placeholder="Ejemplo: #7 o 7" required class="input-rastreo-campo" />
+          </div>
+
+          <div class="campo-rastreo-grupo">
+            <label for="campo-nombre" class="label-rastreo">👤 Nombre del Titular *</label>
+            <input type="text" id="campo-nombre" name="nombre" value="{{ query_nombre|default:'' }}" placeholder="Nombre o apellido registrado" required class="input-rastreo-campo" />
+          </div>
+
+          <div class="campo-rastreo-grupo">
+            <label for="campo-contacto" class="label-rastreo">📱 Teléfono o Correo *</label>
+            <input type="text" id="campo-contacto" name="contacto" value="{{ query_contacto|default:'' }}" placeholder="Teléfono o correo registrado" required class="input-rastreo-campo" />
+          </div>
+        </div>
+
+        <div class="rastreo-btn-submit-wrap">
           <button type="submit" class="btn btn-rojo btn-buscar-rastreo">
-            🔍 Consultar Estatus
+            🔍 Consultar y Reimprimir Ticket
           </button>
         </div>
       </form>
@@ -206,7 +227,58 @@
           </div>
         </div>
 
+        <!-- Ticket Digital Imprimible para Reimpresión en cualquier momento -->
+        <div class="recibo-imprimible" id="recibo-imprimible">
+          <div class="recibo-header">
+            <h2 class="recibo-logo">🐼 El Pandita Dulcería</h2>
+            <p class="recibo-sub">Xicoténcatl, Tamaulipas • Tel. 81 3712 2570</p>
+            <p class="recibo-num">TICKET DIGITAL DE VENTA #{{ pedido.pk }}</p>
+            <p class="recibo-fecha">Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}</p>
+          </div>
+          <div class="recibo-divider"></div>
+          <div class="recibo-seccion">
+            <p><strong>Cliente:</strong> {{ pedido.nombre }} {{ pedido.apellido }}</p>
+            <p><strong>Teléfono:</strong> {{ pedido.telefono }}</p>
+            <p><strong>Entrega:</strong> {{ pedido.entrega }}</p>
+            {% if pedido.direccion %}<p><strong>Dirección:</strong> {{ pedido.direccion }}</p>{% endif %}
+            <p><strong>Método de pago:</strong> {{ pedido.get_metodo_pago_display }}</p>
+            <p><strong>Estatus:</strong> {{ pedido.get_estado_display }}</p>
+            {% if pedido.folio_transferencia %}<p><strong>Folio SPEI:</strong> {{ pedido.folio_transferencia }} ({{ pedido.banco_origen }})</p>{% endif %}
+          </div>
+          <div class="recibo-divider"></div>
+          <table class="recibo-tabla">
+            <thead>
+              <tr>
+                <th>Cant</th>
+                <th>Producto</th>
+                <th class="txt-der">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in pedido.get_items %}
+              <tr>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ item.nombre }}</td>
+                <td class="txt-der">${{ item.precio|floatformat:2 }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="recibo-divider"></div>
+          <div class="recibo-totales">
+            <p class="recibo-total-linea"><strong>TOTAL: ${{ pedido.total|floatformat:2 }} MXN</strong></p>
+            <p class="recibo-iva">(Precios en Moneda Nacional)</p>
+          </div>
+          <div class="recibo-footer">
+            <p>¡Gracias por endulzar tu día con El Pandita!</p>
+            <p>🐼 www.dulceria-el-pandita.onrender.com 🐼</p>
+          </div>
+        </div>
+
         <div class="rastreo-acciones-bloque">
+          <button type="button" class="btn btn-azul" onclick="imprimirRecibo()">
+            🖨️ Imprimir Ticket / Guardar PDF
+          </button>
           <a href="https://wa.me/528137122570?text=Hola%20El%20Pandita,%20quiero%20consultar%20mi%20pedido%20%23{{ pedido.pk }}"
              target="_blank" class="btn btn-verde">
             💬 Preguntar por WhatsApp (81 3712 2570)
@@ -219,10 +291,10 @@
       {% else %}
       <!-- No encontrado -->
       <div class="rastreo-no-encontrado">
-        <div class="no-icono">🔍</div>
-        <h3>No encontramos tu pedido</h3>
-        <p>{{ error }}</p>
-        <p class="ayuda-no-encontrado">Verifica que el número de pedido esté bien escrito o búscalo con el número de teléfono que registraste al hacer la compra.</p>
+        <div class="no-icono">🔒</div>
+        <h3>No se pudo consultar el pedido</h3>
+        <p class="error-texto-destacado">{{ error }}</p>
+        <p class="ayuda-no-encontrado">Por motivos de privacidad, asegúrate de ingresar exactamente el número de pedido y los datos de titular y teléfono/correo que registraste al hacer tu compra.</p>
         <div class="acciones-no-encontrado">
           <a href="{% url 'contacto' %}" class="btn btn-rojo">Contactar a Soporte</a>
           <a href="{% url 'productos' %}" class="btn btn-outline">Ir al Catálogo</a>
@@ -268,5 +340,10 @@
 </footer>
 
 <script src="{% static 'js/Main.js' %}"></script>
+<script>
+function imprimirRecibo() {
+  window.print();
+}
+</script>
 </body>
 </html>

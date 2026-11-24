@@ -60,34 +60,74 @@ def contacto(request):
 
 
 
-# ─── Rastreo de Pedidos en Vivo ───────────────────────────────────────────────
+# ─── Rastreo de Pedidos en Vivo con Verificación de Privacidad ───────────────
 
 def rastreo(request):
-    """Permite al cliente o al profesor consultar el estatus en vivo de un pedido."""
+    """
+    Permite al cliente o al profesor consultar el estatus en vivo de un pedido
+    con verificación de titularidad (número de pedido + nombre + correo/teléfono)
+    para proteger la privacidad de los clientes.
+    """
     pedido = None
     buscado = False
     error = None
-    query = request.GET.get('id', '').strip()
 
-    if query:
+    pedido_id = request.GET.get('id', '').strip() or request.POST.get('id', '').strip()
+    nombre_titular = request.GET.get('nombre', '').strip() or request.POST.get('nombre', '').strip()
+    contacto = request.GET.get('contacto', '').strip() or request.POST.get('contacto', '').strip()
+
+    # Si vino por formulario de búsqueda
+    if pedido_id or nombre_titular or contacto:
         buscado = True
-        id_limpio = query.replace('#', '').replace('PANDITA-', '').replace('pedido-', '').replace('PEDIDO-', '').strip()
-        if id_limpio.isdigit():
-            pedido = Pedido.objects.filter(pk=int(id_limpio)).first()
-        if not pedido:
-            pedido = Pedido.objects.filter(telefono__icontains=query).order_by('-fecha').first()
-        if not pedido:
-            pedido = Pedido.objects.filter(email__iexact=query).order_by('-fecha').first()
-        if not pedido:
-            pedido = Pedido.objects.filter(folio_transferencia__iexact=query).order_by('-fecha').first()
-        if not pedido:
-            error = f"No se encontró ningún pedido asociado a '{query}'."
+        id_limpio = pedido_id.replace('#', '').replace('PANDITA-', '').replace('pedido-', '').replace('PEDIDO-', '').strip()
+
+        if not id_limpio.isdigit():
+            error = "Por favor ingresa un número de pedido válido (ejemplo: #3 o 3)."
+        else:
+            candidato = Pedido.objects.filter(pk=int(id_limpio)).first()
+            if not candidato:
+                error = f"No existe ningún pedido registrado con el número #{id_limpio}."
+            else:
+                # Comprobación de seguridad si es el dueño de la sesión actual
+                sesion_id = request.session.get('ultimo_pedido_id')
+                es_sesion_propia = (sesion_id == candidato.pk)
+
+                # Si no tiene sesión activa del pedido, exige nombre y contacto
+                if not es_sesion_propia and (not nombre_titular or not contacto):
+                    error = "Por seguridad y protección de datos, debes ingresar el nombre del cliente y el teléfono o correo con el que se realizó la compra."
+                elif es_sesion_propia and not nombre_titular and not contacto:
+                    # Acceso directo verificado por la sesión de compra del navegador
+                    pedido = candidato
+                else:
+                    # Validar coincidencia de titular y teléfono/correo
+                    nom_cand = f"{candidato.nombre} {candidato.apellido}".lower()
+                    nombre_valido = (
+                        nombre_titular.lower() in nom_cand or
+                        candidato.nombre.lower() in nombre_titular.lower()
+                    )
+
+                    contacto_clean = contacto.replace(' ', '').replace('-', '').lower()
+                    tel_cand_clean = candidato.telefono.replace(' ', '').replace('-', '').lower()
+                    email_cand = (candidato.email or '').strip().lower()
+
+                    contacto_valido = (
+                        (contacto_clean and contacto_clean in tel_cand_clean) or
+                        (tel_cand_clean and tel_cand_clean in contacto_clean) or
+                        (email_cand and contacto.lower() == email_cand)
+                    )
+
+                    if nombre_valido and contacto_valido:
+                        pedido = candidato
+                    else:
+                        error = f"Acceso protegido: Los datos ingresados (nombre o contacto) no coinciden con los registrados para el Pedido #{candidato.pk}. Verifica la información de tu compra."
 
     return render(request, 'rastreo.html', {
         'pedido': pedido,
         'buscado': buscado,
         'error': error,
-        'query': query,
+        'query_id': pedido_id,
+        'query_nombre': nombre_titular,
+        'query_contacto': contacto,
     })
 
 
@@ -284,6 +324,10 @@ def pagar(request):
                 if pedido.email:
                     enviar_correo_pedido(pedido)
 
+                # Guardar el ID en la sesión para permitir reimprimir y rastrear fácilmente
+                request.session['ultimo_pedido_id'] = pedido.pk
+                request.session.modified = True
+
                 # Limpiar carrito después de confirmar
                 _save_carrito(request, [])
 
@@ -316,9 +360,15 @@ def pagar(request):
     else:
         form = PedidoForm()
 
+    ultimo_pedido = None
+    ultimo_id = request.session.get('ultimo_pedido_id')
+    if ultimo_id:
+        ultimo_pedido = Pedido.objects.filter(pk=ultimo_id).first()
+
     return render(request, 'pagar.html', {
         'form': form,
         'productos_lista': productos_lista,
         'carrito': carrito,
         'confirmado': False,
+        'ultimo_pedido': ultimo_pedido,
     })
